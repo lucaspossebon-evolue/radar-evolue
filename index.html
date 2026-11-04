@@ -368,6 +368,20 @@ tbody tr:hover{background:#FAFBFD}
   </div>
   <div id="monStatus" class="note" style="display:none"></div>
   <div id="monOut"></div>
+
+  <div class="card" id="vgBox" hidden style="padding:18px 20px;margin-top:22px">
+    <div class="eyebrow">Pesquisa independente · usa IA com busca na web</div>
+    <h2 style="margin:4px 0 4px;font-size:18px">Vagas abertas na região</h2>
+    <p class="sub" style="margin:0 0 14px">Procura vagas publicadas perto da cidade escolhida, sem depender de nenhum candidato. O que interessar vira oportunidade no radar.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:end">
+      <div class="fld" style="margin:0"><label>Cidade base</label><input id="vgCidade" placeholder="Linhares - ES"></div>
+      <div class="fld" style="margin:0"><label>Raio</label><select id="vgRaio"><option value="20">20 km</option><option value="50" selected>50 km</option><option value="100">100 km</option></select></div>
+      <div class="fld" style="margin:0"><label>Área</label><select id="vgArea"><option>Todas</option></select></div>
+      <div class="fld" style="margin:0"><label>Cargo ou palavra-chave (opcional)</label><input id="vgTermo" placeholder="ex.: técnico de segurança"></div>
+      <button class="btn" id="vgGo" style="justify-content:center">Buscar vagas</button>
+    </div>
+    <div id="vgOut"></div>
+  </div>
 </section>
 
 <!-- ============ CRM ============ -->
@@ -1117,6 +1131,64 @@ async function perguntar(q){
 }
 
 /* =========================================================
+   VAGAS NA REGIÃO — pesquisa independente de candidato
+   ========================================================= */
+let VAGAS=[];
+const chaveVaga=x=>((x.empresa||'')+(x.cargo||'')).toLowerCase();
+async function buscarVagasRegiao(){
+  const btn=$('#vgGo'),out=$('#vgOut');
+  const cidade=$('#vgCidade').value.trim()||cfg.cidade||'Linhares - ES';
+  const raio=+$('#vgRaio').value||50, area=$('#vgArea').value, termo=$('#vgTermo').value.trim();
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Pesquisando…';
+  out.innerHTML='<div class="out">Procurando vagas publicadas na região. Leva de 30 a 90 segundos.</div>';
+  try{
+    const bruto=await ia({busca:true,max:3500,
+      system:`Você é analista de inteligência comercial da Evolue, consultoria de RH e recrutamento no Espírito Santo, Brasil. Pesquise na web VAGAS DE EMPREGO PUBLICADAS nos últimos 30 dias por empresas localizadas em ${cidade} ou num raio de até ${raio} km. Use sites de vagas (LinkedIn, Indeed, Gupy, InfoJobs, Catho, Vagas.com, Sólides), páginas de carreira das empresas, Sine e notícias de contratação. Ignore vagas sem empresa identificada (confidenciais) e vagas fora do raio. Não invente vagas: cada item precisa ter sido encontrado na pesquisa. Responda SOMENTE com um array JSON, sem texto ao redor, no formato:
+[{"empresa":"","cidade":"Cidade - UF","dist_km":0,"area":"uma de: ${AREAS.join(' | ')}","cargo":"","sinal":"resumo curto da vaga: quantidade, requisitos ou contexto","fonte":"site onde encontrou","link":"url da vaga","data":"AAAA-MM-DD","contato":"e-mail, telefone ou perfil se aparecer","score":0}]
+dist_km é a distância aproximada até ${cidade}. O score vai de 0 a 100 e mede o potencial comercial para uma consultoria de recrutamento: várias vagas na mesma empresa, empresa de médio ou grande porte, cargos difíceis de preencher e vaga recente pontuam mais. Máximo de 12 resultados, ordenados pelo score.`,
+      prompt:`Cidade base: ${cidade}\nRaio: ${raio} km\nÁrea: ${area==='Todas'?'todas as áreas':area}${termo?'\nCargo ou palavra-chave: '+termo:''}\n\nListe as vagas abertas encontradas.`});
+    VAGAS=jsonDe(bruto).filter(o=>o&&o.empresa).map((o,i)=>({
+      id:'v'+Date.now()+i,empresa:String(o.empresa),cidade:o.cidade||cidade,dist:Number(o.dist_km)||0,
+      area:AREAS.includes(o.area)?o.area:(area!=='Todas'?area:'Administrativo'),cargo:o.cargo||'',
+      sinal:o.sinal||'Vaga publicada',fonte:o.fonte||'web',link:o.link||'',contato:o.contato||'',
+      data:(o.data||new Date().toISOString()).slice(0,10),score:Math.max(0,Math.min(100,Number(o.score)||50))}));
+    contar('varreduras');
+    db.logVarredura({id:null,nome:'Busca regional: '+cidade+' · '+raio+' km'+(termo?' · '+termo:'')},VAGAS.length,0,null);
+    renderVagas();
+  }catch(e){
+    db.logVarredura({id:null,nome:'Busca regional: '+cidade},0,0,e.message);
+    out.innerHTML='<div class="out" style="background:#FFEEE7;color:#8C2A08">Não foi possível concluir a busca. '+esc(e.message)+'</div>';
+  }
+  btn.disabled=false;btn.textContent='Buscar vagas';
+}
+function renderVagas(){
+  const out=$('#vgOut');
+  if(!VAGAS.length){out.innerHTML='<div class="out">Nenhuma vaga encontrada com esses filtros. Tente aumentar o raio ou tirar a palavra-chave.</div>';return}
+  const jaTem=new Set(S.oportunidades.map(chaveVaga));
+  const novas=VAGAS.filter(v=>!jaTem.has(chaveVaga(v)));
+  out.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 6px;gap:10px;flex-wrap:wrap">
+      <b>${VAGAS.length} vaga(s) encontrada(s) · ${novas.length} nova(s) para o radar</b>
+      ${novas.length?'<button class="btn sm" id="vgAll">Adicionar todas ao radar</button>':''}</div>`+
+    VAGAS.map((v,i)=>{const tem=jaTem.has(chaveVaga(v));return `<div class="mon-i">
+      <div class="tx"><b>${esc(v.empresa)}</b> — ${esc(v.cargo||'cargo não informado')}
+        <div class="meta">${esc(v.cidade)}${v.dist?' · ~'+v.dist+' km':''} · ${esc(v.area)} · score ${v.score}${v.data?' · '+v.data.split('-').reverse().join('/'):''}</div>
+        <div class="meta">${esc(v.sinal)}${v.link?' · <a href="'+esc(v.link)+'" target="_blank" rel="noopener" style="display:inline;font-size:12.5px;font-weight:500;color:var(--brand)">ver vaga</a>':''}${v.fonte?' · '+esc(v.fonte):''}</div></div>
+      <div class="bt">${tem?'<span class="meta">já no radar</span>':'<button class="btn sm" data-vg="'+i+'">Virar oportunidade</button>'}</div></div>`}).join('');
+  $$('#vgOut [data-vg]').forEach(b=>b.onclick=()=>addVagas([VAGAS[+b.dataset.vg]]));
+  const all=$('#vgAll');if(all)all.onclick=()=>addVagas(novas);
+}
+async function addVagas(lista){
+  const jaTem=new Set(S.oportunidades.map(chaveVaga));
+  const novos=lista.filter(v=>!jaTem.has(chaveVaga(v)));
+  if(!novos.length)return toast('Essas vagas já estão no radar');
+  try{
+    if(sb){await db.inserirOportunidades(novos,null);await db.carregar()}
+    else S.oportunidades=[...novos,...S.oportunidades];
+    save();renderTudo();renderVagas();toast(novos.length+' oportunidade(s) adicionada(s) ao radar');
+  }catch(e){toast('Não consegui gravar: '+e.message)}
+}
+
+/* =========================================================
    MONITOR — RSS via Edge Function, sem chave e sem custo
    ========================================================= */
 let MON=[];
@@ -1413,6 +1485,8 @@ $('#btnVarrer').onclick=varrer;
 $('#btnNova').onclick=()=>formOportunidade(null);
 $('#monGo').onclick=atualizarMonitor;
 $('#monIA').onclick=analisarManchetes;
+$('#vgGo').onclick=buscarVagasRegiao;
+$('#vgArea').innerHTML='<option>Todas</option>'+AREAS.map(a=>'<option>'+a+'</option>').join('');
 $('#cReseed').onclick=()=>{semear();renderTudo();ir('radar');toast(S.oportunidades.length+' oportunidades carregadas')};
 $('#bSalvar').onclick=()=>{
   const l=$('#tBuscas').value.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>{
@@ -1437,7 +1511,7 @@ $('#cSave').onclick=()=>{
        consultor:$('#cConsultor').value.trim(),contato:$('#cContato').value.trim()};
   save();renderConsultas();
   if(cfg.sbUrl+cfg.sbKey!==antes){toast('Reconectando ao banco…');setTimeout(()=>location.reload(),700);return}
-  $('#btnVarrer').hidden=!temIA();$('#monIA').hidden=!temIA();
+  $('#btnVarrer').hidden=!temIA();$('#monIA').hidden=!temIA();$('#vgBox').hidden=!temIA();
   renderRadar();renderUso();toast('Configurações salvas');
 };
 $('#cProvedor').onchange=()=>{
@@ -1497,6 +1571,8 @@ function preencherCfg(){
   $('#tEmail').value=t.email;$('#tWhats').value=t.whats;$('#tLigacao').value=t.ligacao;
   $('#btnVarrer').hidden=!temIA();
   $('#monIA').hidden=!temIA();
+  $('#vgBox').hidden=!temIA();
+  if(!$('#vgCidade').value)$('#vgCidade').value=cfg.cidade||'';
   renderUso();
   $('#proxyCode').textContent=PROXY_CODE;
 }
