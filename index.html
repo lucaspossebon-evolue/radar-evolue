@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar de Oportunidades — Evolue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#061D3B; --ink-2:#0E2A4E; --brand:#173862; --brand-soft:#2C5384;
+  --paper:#F4F6F9; --card:#FFFFFF; --line:#E1E6ED; --line-2:#EEF1F6;
+  --txt:#0F1F35; --txt-2:#5A6C84; --txt-3:#8B9AAE;
+  --frio:#7C93B0; --media:#3E92CE; --alta:#F5A623; --quente:#FF5C2B; --ok:#0F9A6A;
+  --r:14px; --r-sm:9px;
+  --shadow:0 1px 2px rgba(6,29,59,.05), 0 8px 24px -12px rgba(6,29,59,.18);
+  --disp:'Bricolage Grotesque',system-ui,sans-serif;
+  --body:'Instrument Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--paper);color:var(--txt);font-family:var(--body);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:var(--brand-soft)}
+:focus-visible{outline:2px solid var(--alta);outline-offset:2px;border-radius:4px}
+
+/* ---------- topo ---------- */
+.topbar{background:var(--ink);color:#fff;position:sticky;top:0;z-index:40}
+.topbar-in{max-width:1380px;margin:0 auto;padding:0 22px;display:flex;align-items:center;gap:26px;height:62px}
+.logo{height:26px;display:block}
+.brandmark{display:flex;align-items:center;gap:14px}
+.brandmark .sep{width:1px;height:26px;background:rgba(255,255,255,.2)}
+.brandmark .prod{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:-.2px;line-height:1.1}
+.brandmark .prod small{display:block;font-family:var(--mono);font-size:9.5px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:#8FB0D6}
+nav.tabs{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
+nav.tabs button{padding:8px 13px;border-radius:8px;font-size:13.5px;font-weight:500;color:#A9C0DC;white-space:nowrap}
+nav.tabs button:hover{background:rgba(255,255,255,.08);color:#fff}
+nav.tabs button.on{background:#fff;color:var(--ink);font-weight:600}
+.sync{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;color:#8FB0D6;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--frio);flex:none}
+.dot.live{background:#3ED598;box-shadow:0 0 0 3px rgba(62,213,152,.2)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1380px;margin:0 auto;padding:26px 22px 80px}
+.view{display:none}
+.view.on{display:block}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+h1{font-family:var(--disp);font-size:27px;font-weight:800;letter-spacing:-.7px;line-height:1.1}
+.sub{color:var(--txt-2);font-size:13.5px;margin-top:3px;max-width:64ch}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--txt-3);margin-bottom:6px}
+
+.btn{background:var(--brand);color:#fff;padding:9px 16px;border-radius:9px;font-weight:600;font-size:13.5px;display:inline-flex;align-items:center;gap:8px;transition:.15s}
+.btn:hover{background:var(--ink)}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--line-2);color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:12.5px;border-radius:7px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.grid{display:grid;gap:16px}
+
+/* ---------- KPIs ---------- */
+.kpis{grid-template-columns:repeat(auto-fit,minmax(158px,1fr));margin-bottom:18px}
+.kpi{padding:15px 16px}
+.kpi .n{font-family:var(--disp);font-size:30px;font-weight:800;letter-spacing:-1.2px;line-height:1}
+.kpi .l{font-size:11.5px;color:var(--txt-2);margin-top:5px;line-height:1.3}
+.kpi .d{font-family:var(--mono);font-size:10px;color:var(--ok);margin-top:6px}
+
+/* ---------- RADAR (elemento assinatura) ---------- */
+.radar-row{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:16px;align-items:start}
+.scope{background:var(--ink);border-radius:var(--r);padding:20px;position:relative;overflow:hidden;color:#fff}
+.scope-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:8px;flex-wrap:wrap}
+.scope-hd h2{font-family:var(--disp);font-size:16px;font-weight:700;letter-spacing:-.3px}
+.scope-hd p{font-size:12px;color:#8FB0D6;margin-top:2px}
+.scope-ctl{display:flex;gap:6px;flex-wrap:wrap}
+.scope-ctl button{font-family:var(--mono);font-size:10.5px;padding:5px 9px;border-radius:6px;color:#8FB0D6;border:1px solid rgba(255,255,255,.16)}
+.scope-ctl button.on{background:rgba(255,255,255,.94);color:var(--ink);border-color:transparent;font-weight:700}
+#scopeSvg{width:100%;height:auto;display:block;touch-action:none}
+.sweep{transform-origin:50% 50%;animation:spin 7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.sweep{animation:none;opacity:.25}}
+.blip{cursor:pointer;transition:r .15s}
+.blip:hover{stroke:#fff;stroke-width:2}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-family:var(--mono);font-size:10px;color:#8FB0D6}
+.legend i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+
+/* ---------- listas ---------- */
+.panel-t{font-family:var(--disp);font-size:14px;font-weight:700;padding:14px 16px;border-bottom:1px solid var(--line-2);display:flex;justify-content:space-between;align-items:center}
+.panel-t span{font-family:var(--mono);font-size:10px;color:var(--txt-3);font-weight:400}
+.feed{max-height:452px;overflow:auto}
+.feed-i{padding:12px 16px;border-bottom:1px solid var(--line-2);cursor:pointer;transition:.12s}
+.feed-i:hover{background:var(--line-2)}
+.feed-i:last-child{border:0}
+.feed-i .r1{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.feed-i b{font-size:13.5px;font-weight:600}
+.feed-i .m{font-size:11.5px;color:var(--txt-2);margin-top:2px}
+
+.score{font-family:var(--mono);font-size:12px;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--line-2);color:var(--txt-2);flex:none}
+.score.q{background:#FFEEE7;color:#C33C0F}
+.score.a{background:#FFF4DE;color:#976100}
+.score.m{background:#E7F2FB;color:#1F6DA5}
+
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:var(--line-2);color:var(--txt-2)}
+.tag.ok{background:#E3F6EE;color:#0B7350}
+.tag.q{background:#FFEEE7;color:#C33C0F}
+
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-3);text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);font-weight:400;white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--line-2);font-size:13.5px;vertical-align:middle}
+tbody tr:hover{background:#FAFBFD}
+.who b{display:block;font-weight:600}
+.who small{color:var(--txt-2);font-size:11.5px}
+
+.bar{height:5px;border-radius:3px;background:var(--line-2);overflow:hidden;width:74px}
+.bar i{display:block;height:100%;border-radius:3px}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filters input,.filters select{padding:8px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px}
+.filters input{min-width:210px;flex:1}
+
+/* ---------- oportunidades ---------- */
+.ops{grid-template-columns:repeat(auto-fill,minmax(322px,1fr))}
+.op{padding:15px 16px;display:flex;flex-direction:column;gap:9px}
+.op .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.op h3{font-family:var(--disp);font-size:15.5px;font-weight:700;letter-spacing:-.2px}
+.op .loc{font-size:11.5px;color:var(--txt-2);font-family:var(--mono)}
+.op .why{font-size:12.5px;background:var(--line-2);border-radius:var(--r-sm);padding:9px 11px;color:var(--txt-2);border-left:3px solid var(--alta)}
+.op .match{font-size:12.5px;display:flex;align-items:center;gap:7px}
+.op .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+
+/* ---------- kanban ---------- */
+.kb{display:grid;grid-template-columns:repeat(5,minmax(215px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px}
+.col{background:#EDF0F5;border-radius:var(--r);padding:10px;min-height:180px}
+.col h4{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-2);padding:2px 4px 9px;display:flex;justify-content:space-between}
+.lead{background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 11px;margin-bottom:8px;cursor:grab;box-shadow:0 1px 2px rgba(6,29,59,.05)}
+.lead:active{cursor:grabbing}
+.lead.drag{opacity:.4}
+.lead b{font-size:13px;display:block}
+.lead small{font-size:11px;color:var(--txt-2)}
+.col.over{background:#E2EAF4;outline:2px dashed var(--brand-soft)}
+
+/* ---------- IA ---------- */
+.chat{display:flex;flex-direction:column;gap:12px;max-height:520px;overflow:auto;padding:18px}
+.msg{max-width:82%;padding:11px 14px;border-radius:13px;font-size:13.5px;white-space:pre-wrap;line-height:1.55}
+.msg.u{align-self:flex-end;background:var(--brand);color:#fff;border-bottom-right-radius:4px}
+.msg.a{align-self:flex-start;background:var(--line-2);border-bottom-left-radius:4px}
+.ask{display:flex;gap:8px;padding:14px;border-top:1px solid var(--line)}
+.ask input{flex:1;padding:11px 14px;border:1px solid var(--line);border-radius:10px}
+.chips{display:flex;gap:7px;flex-wrap:wrap;padding:0 18px 16px}
+.chips button{font-size:12px;padding:6px 11px;border:1px solid var(--line);border-radius:20px;color:var(--txt-2);background:#fff}
+.chips button:hover{border-color:var(--brand-soft);color:var(--brand)}
+
+/* ---------- config ---------- */
+.cfg{max-width:760px}
+.fld{margin-bottom:15px}
+.fld label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px}
+.fld p{font-size:12px;color:var(--txt-2);margin-bottom:7px}
+.fld input,.fld select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-family:var(--mono);font-size:12.5px}
+.note{background:#FFF9EC;border:1px solid #F5E0B0;border-radius:var(--r-sm);padding:12px 14px;font-size:12.5px;color:#7A5A11;margin-bottom:16px}
+.note b{color:#5A420A}
+
+/* ---------- drawer ---------- */
+.scrim{position:fixed;inset:0;background:rgba(6,29,59,.45);opacity:0;pointer-events:none;transition:.2s;z-index:60}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:#fff;z-index:61;transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);overflow:auto;box-shadow:-20px 0 50px -20px rgba(6,29,59,.35)}
+.drawer.on{transform:none}
+.drawer-hd{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:18px 22px;display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.drawer-bd{padding:20px 22px 60px}
+.kv{display:grid;grid-template-columns:112px 1fr;gap:7px 14px;font-size:13px;margin:14px 0}
+.kv dt{color:var(--txt-2);font-size:12px}
+.out{background:var(--line-2);border-radius:var(--r-sm);padding:14px;font-size:13px;white-space:pre-wrap;line-height:1.6;margin-top:10px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
+.btn.ghost .spin{border-color:rgba(23,56,98,.25);border-top-color:var(--brand)}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{padding:52px 20px;text-align:center;color:var(--txt-2)}
+.empty b{display:block;font-family:var(--disp);font-size:16px;color:var(--txt);margin-bottom:5px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,90px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;z-index:80;transition:.25s;box-shadow:var(--shadow)}
+.toast.on{transform:translate(-50%,0)}
+.mon-g{margin-bottom:20px}
+.mon-g h3{font-family:var(--disp);font-size:14px;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.mon-g h3 span{font-family:var(--mono);font-size:10px;color:var(--txt-3);font-weight:400}
+.mon-i{background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:7px;display:flex;gap:12px;align-items:flex-start}
+.mon-i .tx{flex:1;min-width:0}
+.mon-i a{font-size:13.5px;font-weight:600;text-decoration:none;color:var(--txt);display:block;line-height:1.35}
+.mon-i a:hover{color:var(--brand-soft);text-decoration:underline}
+.mon-i .meta{font-family:var(--mono);font-size:10.5px;color:var(--txt-3);margin-top:3px}
+.mon-i .bt{display:flex;gap:5px;flex:none}
+.vaga{border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 11px;background:#FAFBFD}
+.vaga.aberta{border-color:#F0C46A;background:#FFFBF2}
+.vaga .rot{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-3);display:block;margin-bottom:2px}
+.vaga.aberta .rot{color:#9A6A08}
+.vaga b{font-size:14px;font-weight:600;line-height:1.25}
+.cands{display:grid;gap:5px}
+.cand-l{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 8px;border-radius:6px;background:var(--line-2)}
+.cand-l b{font-weight:600}
+.cand-l span{color:var(--txt-2)}
+.cand-l .pc{margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--ok);flex:none}
+.nada{font-size:12.5px;color:var(--txt-3);padding:5px 2px}
+.links{display:grid;gap:6px}
+.links a{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:13px;text-decoration:none;color:var(--brand);background:#fff;transition:.12s}
+.links a:hover{background:var(--line-2);border-color:var(--brand-soft)}
+.links a::after{content:'↗';float:right;color:var(--txt-3)}
+.qa{padding:15px 16px}
+.qa h4{font-family:var(--disp);font-size:14px;margin-bottom:8px}
+.qa ol{margin:0;padding-left:18px;font-size:13px;color:var(--txt-2)}
+.qa li{margin-bottom:4px}
+.qa li b{color:var(--txt)}
+.qa .vazio{font-size:13px;color:var(--txt-3)}
+.gate{position:fixed;inset:0;background:var(--ink);z-index:90;display:flex;align-items:center;justify-content:center;padding:24px}
+.gate[hidden]{display:none}
+.gate-box{width:100%;max-width:350px;text-align:center}
+.gate img{height:30px;margin:0 auto 26px;display:block}
+.gate h2{font-family:var(--disp);color:#fff;font-size:19px;font-weight:700;margin-bottom:5px}
+.gate>.gate-box>p{color:#8FB0D6;font-size:13px;margin-bottom:22px}
+.gate input{width:100%;padding:12px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;margin-bottom:10px}
+.gate input::placeholder{color:#6E8CB0}
+.gate .btn{width:100%;justify-content:center;background:#fff;color:var(--ink)}
+.gate .btn:hover{background:#DDE7F3}
+.gate .alt{margin-top:18px;font-size:12.5px;color:#8FB0D6;text-decoration:underline}
+.gate .err{color:#FF9B7A;font-size:12.5px;min-height:17px;margin-top:9px}
+@media(max-width:1040px){.radar-row{grid-template-columns:1fr}}
+@media(max-width:720px){.topbar-in{height:auto;padding:10px 16px;flex-wrap:wrap;gap:12px}nav.tabs{margin-left:0;order:3;width:100%}.wrap{padding:18px 16px 70px}h1{font-size:22px}}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate" hidden>
+  <div class="gate-box">
+    <img id="gateLogo" alt="Evolue">
+    <h2>Radar de Oportunidades</h2>
+    <p>Acesso restrito à equipe Evolue</p>
+    <input id="gEmail" type="email" placeholder="E-mail" autocomplete="username">
+    <input id="gSenha" type="password" placeholder="Senha" autocomplete="current-password">
+    <button class="btn" id="gEntrar">Entrar</button>
+    <div class="err" id="gErr" role="alert"></div>
+    <button class="alt" id="gDemo">Ver com dados de demonstração</button>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brandmark">
+      <img class="logo" src="data:image/png;base64,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" alt="Evolue Treinamento e Desenvolvimento">
+      <div class="sep"></div>
+      <div class="prod">Radar de Oportunidades<small>Inteligência de talentos</small></div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-v="radar" class="on">Radar</button>
+      <button data-v="cand">Candidatos</button>
+      <button data-v="ops">Oportunidades</button>
+      <button data-v="mon">Monitor</button>
+      <button data-v="crm">Prospecção</button>
+      <button data-v="ia">Consultas</button>
+      <button data-v="cfg">Configurar</button>
+    </nav>
+    <div class="sync"><span class="dot" id="syncDot"></span><span id="syncTxt">demonstração</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============ RADAR ============ -->
+<section class="view on" id="v-radar">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Painel do dia</div>
+      <h1>O que está no radar hoje</h1>
+      <p class="sub">Cada ponto é uma empresa que pode contratar alguém que já está na sua base. O anel mostra a distância da cidade do candidato; a cor, a temperatura da oportunidade.</p>
+    </div>
+    <button class="btn" id="btnNova">Cadastrar oportunidade</button>
+    <button class="btn ghost" id="btnVarrer" hidden>Varrer com IA</button>
+  </div>
+
+  <div class="grid kpis" id="kpis"></div>
+
+  <div class="radar-row">
+    <div class="scope">
+      <div class="scope-hd">
+        <div>
+          <h2>Varredura geográfica</h2>
+          <p id="scopeSub">—</p>
+        </div>
+        <div class="scope-ctl" id="scopeCtl">
+          <button data-raio="20">20 km</button>
+          <button data-raio="50">50 km</button>
+          <button data-raio="100" class="on">100 km</button>
+          <button data-raio="999">Tudo + remoto</button>
+        </div>
+      </div>
+      <svg id="scopeSvg" viewBox="0 0 620 460" role="img" aria-label="Mapa de oportunidades por distância e área profissional"></svg>
+      <div class="legend">
+        <span><i style="background:#FF5C2B"></i>Chance muito alta</span>
+        <span><i style="background:#F5A623"></i>Alta</span>
+        <span><i style="background:#3E92CE"></i>Média</span>
+        <span><i style="background:#7C93B0"></i>Monitorar</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="panel-t">Candidatos parados <span id="paradosN"></span></div>
+      <div class="feed" id="feedParados"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CANDIDATOS ============ -->
+<section class="view" id="v-cand">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Banco de talentos</div>
+      <h1>Candidatos</h1>
+      <p class="sub">Sincronizados do Quickin. O score de empregabilidade é calculado aqui, com base em avaliação, tempo parado e aderência do cargo ao mercado da região.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="btnImport">Importar CSV do Quickin</button>
+      <button class="btn ghost" id="btnSync">Sincronizar via API</button>
+    </div>
+    <input type="file" id="csvFile" accept=".csv,text/csv" hidden>
+  </div>
+  <div class="filters">
+    <input id="fBusca" placeholder="Buscar por nome, cargo ou cidade">
+    <select id="fAval"><option value="">Toda avaliação</option><option>Excelente</option><option>Muito Bom</option><option>Bom</option></select>
+    <select id="fCidade"><option value="">Todas as cidades</option></select>
+    <select id="fOrd"><option value="score">Maior empregabilidade</option><option value="parado">Mais tempo parado</option><option value="nome">Nome</option></select>
+  </div>
+  <div class="card" style="overflow:auto">
+    <table>
+      <thead><tr><th>Candidato</th><th>Cidade</th><th>Área</th><th>Avaliação</th><th>Parado</th><th>Empregabilidade</th><th></th></tr></thead>
+      <tbody id="tbCand"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ OPORTUNIDADES ============ -->
+<section class="view" id="v-ops">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Inteligência comercial</div>
+      <h1>Empresas com chance de contratar</h1>
+      <p class="sub">Cada card traz o sinal que a IA encontrou, o candidato mais aderente e a abordagem pronta para enviar.</p>
+    </div>
+    <div style="display:flex;gap:8px"><select id="fOpOrd" class="btn ghost" style="padding:8px 12px"><option value="score">Maior score</option><option value="data">Mais recentes</option><option value="dist">Mais perto</option></select></div>
+  </div>
+  <div class="filters">
+    <input id="fOpBusca" placeholder="Buscar por cargo, empresa ou cidade">
+    <select id="fOpArea"><option value="">Todas as áreas</option></select>
+    <select id="fOpTipo"><option value="">Vagas publicadas e perfis prováveis</option><option value="vaga">Só vagas publicadas</option><option value="perfil">Só perfis prováveis</option></select>
+    <select id="fOpMatch"><option value="">Com ou sem candidato</option><option value="sim">Só com candidato aderente</option><option value="nao">Só sem candidato (captação)</option></select>
+  </div>
+  <div class="grid ops" id="gridOps"></div>
+</section>
+
+<!-- ============ MONITOR ============ -->
+<section class="view" id="v-mon">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Vigilância automática · custo zero</div>
+      <h1>Monitor da região</h1>
+      <p class="sub">Buscas que rodam sozinhas no Google Notícias e em feeds regionais. Sem chave de IA, sem cota, sem custo. O que interessar vira oportunidade em um clique.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ghost" id="monGo">Atualizar agora</button>
+      <button class="btn" id="monIA" hidden>Analisar com IA</button>
+    </div>
+  </div>
+  <div id="monStatus" class="note" style="display:none"></div>
+  <div id="monOut"></div>
+</section>
+
+<!-- ============ CRM ============ -->
+<section class="view" id="v-crm">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Funil comercial</div>
+      <h1>Prospecção</h1>
+      <p class="sub">Arraste o card conforme a conversa avança. Tudo fica salvo neste navegador.</p>
+    </div>
+  </div>
+  <div class="kb" id="kb"></div>
+</section>
+
+<!-- ============ IA ============ -->
+<section class="view" id="v-ia">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Leituras da base</div>
+      <h1>Consultas</h1>
+      <p class="sub">Calculadas na hora, a partir dos seus próprios dados.</p>
+    </div>
+  </div>
+  <div class="grid" id="consultas" style="grid-template-columns:repeat(auto-fit,minmax(310px,1fr));margin-bottom:18px"></div>
+  <div class="card" id="cardIA">
+    <div class="chat" id="chat"><div class="msg a">Pergunte o que quiser sobre a base. Por exemplo: quem está parado há mais tempo com perfil raro, ou qual cidade tem mais demanda hoje.</div></div>
+    <div class="chips">
+      <button>Quais candidatos excelentes estão parados há mais de 30 dias?</button>
+      <button>Qual cidade tem maior demanda hoje?</button>
+      <button>Quais empresas nunca foram prospectadas?</button>
+      <button>Quem tem maior chance de contratação imediata?</button>
+    </div>
+    <div class="ask"><input id="iaIn" placeholder="Escreva sua pergunta"><button class="btn" id="iaGo">Perguntar</button></div>
+  </div>
+</section>
+
+<!-- ============ CONFIG ============ -->
+<section class="view" id="v-cfg">
+  <div class="head"><div><div class="eyebrow">Ajustes</div><h1>Configurar</h1><p class="sub">Chaves e endereços ficam salvos apenas neste navegador.</p></div></div>
+  <div class="cfg">
+    <div class="note"><b>Antes de publicar:</b> se este arquivo ficar em um endereço público, qualquer visitante consegue ler a chave da API pelo código da página. Use o campo "Endereço do proxy" e deixe as chaves no servidor — há um modelo de função pronto no final desta tela.</div>
+
+    <div class="card" style="padding:20px;margin-bottom:16px">
+      <h3 style="font-family:var(--disp);font-size:15px;margin-bottom:12px">Supabase</h3>
+      <div class="fld"><label>URL do projeto</label><p>Settings &gt; API &gt; Project URL.</p><input id="cSbUrl" placeholder="https://xxxx.supabase.co"></div>
+      <div class="fld"><label>Chave anon</label><p>Pode ficar no arquivo. Quem controla o acesso é o RLS mais o login da equipe.</p><input id="cSbKey" placeholder="eyJhbGciOi..."></div>
+      <button class="btn ghost" id="cSair">Sair da conta</button>
+      <button class="btn ghost" id="cReseed">Recarregar dados de demonstração</button>
+    </div>
+
+    <div class="card" style="padding:20px;margin-bottom:16px">
+      <h3 style="font-family:var(--disp);font-size:15px;margin-bottom:12px">Quickin</h3>
+      <div class="fld"><label>Account ID</label><p>O identificador da conta Evolue dentro da URL do Quickin.</p><input id="cQAcc" placeholder="5d0417b8f4467d04a0b1da14"></div>
+      <div class="fld"><label>Token de API</label><p>Peça ao suporte do Quickin. Entra no cabeçalho como Bearer.</p><input id="cQTok" type="password" placeholder="••••••••"></div>
+      <div class="fld"><label>Endereço do proxy</label><p>Recomendado. O navegador não consegue chamar a API do Quickin diretamente por causa de CORS. Deixe vazio só para testar.</p><input id="cProxy" placeholder="https://xxxx.supabase.co/functions/v1/radar-proxy"></div>
+    </div>
+
+    <div class="card" style="padding:20px;margin-bottom:16px">
+      <h3 style="font-family:var(--disp);font-size:15px;margin-bottom:4px">Inteligência artificial <span class="tag">opcional</span></h3>
+      <p style="font-size:12.5px;color:var(--txt-2);margin-bottom:14px">Deixe em branco e o sistema funciona inteiro sem nenhum custo de IA. Preenchendo, ganha dois extras: busca automática de empresas e revisão dos textos.</p>
+      <div class="fld"><label>Provedor</label><p>Trocar aqui não muda mais nada no sistema. Só Anthropic, OpenAI e Gemini fazem busca na web; os demais respondem sem pesquisar.</p>
+        <select id="cProvedor">
+          <option value="anthropic">Anthropic — com busca na web</option>
+          <option value="openai">OpenAI — com busca na web</option>
+          <option value="gemini">Google Gemini — com busca na web</option>
+          <option value="openrouter">OpenRouter — vários modelos, sem busca</option>
+          <option value="compat">Compatível com OpenAI — Groq, DeepSeek, Ollama, Azure</option>
+        </select></div>
+      <div class="fld"><label>Modelo</label><p id="cModelDica">Deixe vazio para usar o padrão do provedor.</p><input id="cModel" placeholder="claude-sonnet-5"></div>
+      <div class="fld"><label>Chave da API</label><p>Só é usada se você não tiver proxy. Com proxy, a chave fica nos secrets da função e este campo pode ficar vazio.</p><input id="cKey" type="password" placeholder="sk-..."></div>
+      <div class="fld"><label>Cidade base da operação</label><input id="cCidade" placeholder="Linhares - ES"></div>
+      <div class="fld"><label>Seu nome nas abordagens</label><input id="cConsultor" placeholder="Lucas Possebon"></div>
+      <div class="fld"><label>Seu contato no rodapé</label><input id="cContato" placeholder="(27) 99999-0000 · lucas@evoluetreinamento.com.br"></div>
+      <button class="btn" id="cSave">Salvar configurações</button>
+      <button class="btn ghost" id="cTest">Testar conexão com a IA</button>
+      <div id="cOut" class="out" style="display:none"></div>
+      <div class="eyebrow" style="margin-top:20px">Consumo estimado no mês</div>
+      <div id="usoOut" class="out"></div>
+    </div>
+
+    <div class="card" style="padding:20px;margin-bottom:16px">
+      <h3 style="font-family:var(--disp);font-size:15px;margin-bottom:6px">Buscas do monitor</h3>
+      <p style="font-size:12.5px;color:var(--txt-2);margin-bottom:6px">Uma por linha, no formato <code>Nome | consulta</code>. Aceita operadores do Google: aspas para expressão exata e OR para alternativas.</p>
+      <p style="font-size:12.5px;color:var(--txt-2);margin-bottom:12px">Se no lugar da consulta você colar um endereço começando com <code>http</code>, o sistema trata como feed RSS direto. É assim que entram os alertas do Google e os feeds de sites regionais. Máximo de 12 linhas por rodada.</p>
+      <textarea id="tBuscas" rows="10" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-family:var(--mono);font-size:11.5px;line-height:1.7"></textarea>
+      <button class="btn" id="bSalvar" style="margin-top:10px">Salvar buscas</button>
+      <button class="btn ghost" id="bReset" style="margin-top:10px">Voltar ao padrão</button>
+    </div>
+
+    <div class="card" style="padding:20px;margin-bottom:16px">
+      <h3 style="font-family:var(--disp);font-size:15px;margin-bottom:6px">Modelos de abordagem</h3>
+      <p style="font-size:12.5px;color:var(--txt-2);margin-bottom:12px">Variáveis disponíveis: <code>{{empresa}}</code> <code>{{cargo}}</code> <code>{{cidade}}</code> <code>{{sinal}}</code> <code>{{consultor}}</code> <code>{{contato}}</code> <code>{{cidade_candidato}}</code></p>
+      <div class="fld"><label>E-mail</label><textarea id="tEmail" rows="11" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;line-height:1.6"></textarea></div>
+      <div class="fld"><label>WhatsApp</label><textarea id="tWhats" rows="5" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;line-height:1.6"></textarea></div>
+      <div class="fld"><label>Roteiro de ligação</label><textarea id="tLigacao" rows="12" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;line-height:1.6"></textarea></div>
+      <button class="btn" id="tSalvar">Salvar modelos</button>
+      <button class="btn ghost" id="tReset">Voltar ao padrão</button>
+    </div>
+
+    <div class="card" style="padding:20px">
+      <h3 style="font-family:var(--disp);font-size:15px;margin-bottom:8px">Modelo do proxy (Supabase Edge Function)</h3>
+      <p style="font-size:12.5px;color:var(--txt-2);margin-bottom:10px">Crie a função <code>radar-proxy</code>, cole o código e guarde as chaves como secrets. O sistema passa a chamar só este endereço.</p>
+      <div class="out" id="proxyCode" style="font-family:var(--mono);font-size:11px;max-height:300px;overflow:auto"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true"><div id="drawerBox"></div></aside>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =========================================================
+   ESTADO
+   ========================================================= */
+const LS='radarEvolue.v1';
+const SEED_V='2026-09-27-lote2c';  // mude ao atualizar DEMO_O: força a recarga no navegador
+const AREAS=['Administrativo','Comercial','Produção','Financeiro','Logística','Segurança do Trabalho','Tecnologia','Saúde'];
+const FASES=['Novo lead','Abordado','Respondeu','Proposta','Convertido'];
+
+const BUSCAS_PADRAO=[
+ {nome:'Inaugurações · Linhares',q:'inaugura OR "nova unidade" OR "nova loja" Linhares "Espírito Santo"'},
+ {nome:'Expansão e investimento · Linhares',q:'amplia OR expansão OR investimento OR fábrica Linhares "Espírito Santo"'},
+ {nome:'Contratações · Linhares',q:'contrata OR "vagas de emprego" OR "abre vagas" OR Sine Linhares "Espírito Santo"'},
+ {nome:'Expansão · São Mateus',q:'investimento OR amplia OR inaugura OR "polo industrial" "São Mateus" "Espírito Santo"'},
+ {nome:'Expansão · Aracruz',q:'investimento OR amplia OR inaugura OR indústria Aracruz "Espírito Santo"'},
+ {nome:'Expansão · Colatina',q:'investimento OR amplia OR inaugura OR empresa Colatina "Espírito Santo"'},
+ {nome:'Norte capixaba · empregos',q:'emprego OR vagas OR contrata Sooretama OR Jaguaré OR "Rio Bananal" "Espírito Santo"'},
+ {nome:'Indústria e logística · norte do ES',q:'"centro logístico" OR "polo industrial" OR galpão OR "nova fábrica" "norte do Espírito Santo"'}
+];
+const MODELOS={anthropic:'claude-sonnet-5-5',openai:'gpt-5',gemini:'gemini-2.5-flash',
+  openrouter:'anthropic/claude-sonnet-4.5',compat:'llama-3.3-70b-versatile'};
+const SEM_BUSCA=new Set(['openrouter','compat']);
+let cfg={sbUrl:'',sbKey:'',qAcc:'',qTok:'',proxy:'',key:'',provedor:'anthropic',model:'',
+  cidade:'Linhares - ES',consultor:'',contato:'',tpl:null,buscas:null};
+let S={candidatos:[],oportunidades:[],leads:{},raio:100,demo:true,dispensados:[],uso:{mes:'',varreduras:0,analises:0,textos:0}};
+let sb=null,user=null;
+
+function save(){localStorage.setItem(LS,JSON.stringify({cfg,S:sb?{raio:S.raio}:S}))}
+function load(){try{const d=JSON.parse(localStorage.getItem(LS));if(d){cfg={...cfg,...d.cfg};S={...S,...(d.S||{})}}}catch(e){}}
+
+/* ---- camada de dados: Supabase quando conectado, navegador quando não ---- */
+const cidUf=t=>{const m=(t||'').match(/^(.*?)\s*-\s*([A-Z]{2})$/);return m?[m[1],m[2]]:[t||'',null]};
+const db={
+  async carregar(){
+    const [c,o]=await Promise.all([
+      sb.from('candidatos').select('*').eq('arquivado',false).order('empregabilidade',{ascending:false}),
+      sb.from('oportunidades').select('*').eq('descartada',false).order('score',{ascending:false})]);
+    if(c.error)throw c.error; if(o.error)throw o.error;
+    S.candidatos=(c.data||[]).map(r=>({id:r.id,nome:r.nome,cargo:r.cargo||'',cidade:r.cidade+(r.uf?' - '+r.uf:''),
+      area:r.area||'Administrativo',aval:r.avaliacao||'Bom',parado:r.dias_parado||0,
+      escolaridade:r.escolaridade||'Não informado',pretensao:Number(r.pretensao)||0,
+      emp:r.empregabilidade||0,email:r.email||'',fone:r.telefone||'',origem:'quickin'}));
+    S.oportunidades=(o.data||[]).map(r=>({id:r.id,empresa:r.empresa,cidade:r.cidade+(r.uf?' - '+r.uf:''),
+      dist:r.dist_km||0,area:r.area||'Administrativo',cargo:r.cargo||'',sinal:r.sinal||'',
+      fonte:r.fonte||'',link:r.link||'',contato:r.contato||'',
+      data:r.publicado_em||new Date().toISOString().slice(0,10),score:r.score??50}));
+    S.leads={};(o.data||[]).forEach(r=>{if(r.fase)S.leads[r.id]=r.fase});
+    S.demo=false;
+  },
+  async inserirOportunidades(lista,cand){
+    const {error}=await sb.from('oportunidades').upsert(lista.map(x=>{
+      const [ci,uf]=cidUf(x.cidade);
+      return {empresa:x.empresa,cidade:ci,uf,dist_km:x.dist,area:x.area,cargo:x.cargo||'',
+        sinal:x.sinal,fonte:x.fonte,link:x.link||null,contato:x.contato||null,
+        publicado_em:x.data,score:x.score,candidato_id:cand?cand.id:null};
+    }),{onConflict:'empresa,cargo'});
+    if(error)throw error;
+  },
+  async registrar(opId,tipo,conteudo){
+    if(!sb||!opId)return;
+    await sb.from('interacoes').insert({oportunidade_id:opId,tipo,conteudo,autor:user?.email||''});
+  },
+  async logVarredura(cand,achadas,novas,erro){
+    if(!sb)return;
+    await sb.from('varreduras').insert({candidato_id:cand?.id||null,candidato_nome:cand?.nome||null,
+      encontradas:achadas,novas,modelo:cfg.model,erro:erro||null});
+  }
+};
+
+async function setFase(id,fase){
+  S.leads[id]=fase;save();renderKb();renderKpis();renderOps();
+  if(sb){
+    const {error}=await sb.from('oportunidades').update({fase}).eq('id',id);
+    if(error)toast('Fase não gravada no servidor: '+error.message);
+    else db.registrar(id,'mudanca_fase',fase);
+  }
+}
+
+/* ---- dados de demonstração ---- */
+const DEMO_C=[
+ ['Ana Paula Ribeiro','Supervisora Administrativa','Linhares - ES','Administrativo','Excelente',41,'Superior completo',3800],
+ ['Marcos Vinícius Alves','Vendedor Externo','Linhares - ES','Comercial','Muito Bom',62,'Médio completo',2600],
+ ['Juliana Costa Neves','Analista Financeiro','Colatina - ES','Financeiro','Excelente',18,'Superior completo',4200],
+ ['Rodrigo Menezes','Técnico de Segurança do Trabalho','São Mateus - ES','Segurança do Trabalho','Excelente',75,'Técnico',3900],
+ ['Fernanda Lopes','Assistente de Logística','Aracruz - ES','Logística','Muito Bom',29,'Superior cursando',2400],
+ ['Carlos Eduardo Prado','Encarregado de Produção','Linhares - ES','Produção','Excelente',11,'Técnico',4600],
+ ['Beatriz Marques','Auxiliar Administrativo','Linhares - ES','Administrativo','Bom',88,'Médio completo',1800],
+ ['Diego Ferrari','Analista de Sistemas','Vitória - ES','Tecnologia','Muito Bom',34,'Superior completo',6500],
+ ['Patrícia Nogueira','Técnica de Enfermagem do Trabalho','Serra - ES','Saúde','Muito Bom',52,'Técnico',3100],
+ ['Wesley Andrade','Coordenador Comercial','Colatina - ES','Comercial','Excelente',23,'Superior completo',5800],
+ ['Larissa Fontes','Analista de RH','Linhares - ES','Administrativo','Muito Bom',46,'Superior completo',3400],
+ ['Tiago Barreto','Motorista Carreteiro','São Mateus - ES','Logística','Bom',67,'Médio completo',3200]
+];
+const DEMO_O=[
+ ['Master Cargas Brasil','Linhares - ES',0,'Logística','R$ 80 milhões em unidade logística em Linhares, com previsão de 100 postos de trabalho em três anos.','Tribuna Online',84,'Coordenador de Logística','2026-07-25'],
+ ['ENGIE Brasil Energia','Linhares - ES',0,'Segurança do Trabalho','Linha de transmissão Asa Branca, R$ 2,67 bi, licença do IBAMA liberada. Obra de 666 km passando por Linhares e Colatina.','ES Fala',84,'Técnico de Segurança do Trabalho','2026-06-17'],
+ ['Technobras','São Mateus - ES',85,'Produção','Inaugurou unidade no Polo Industrial do Rodocon: R$ 45 milhões e 50 vagas diretas, operação iniciando agora.','Portal Jornal do Norte',83,'Encarregado de Produção','2026-09-05'],
+ ['Mercado Livre','São Mateus - ES',85,'Logística','Centro logístico no pacote de R$ 1,1 bilhão que traz 20 empresas ao polo industrial.','O Capixaba',79,'Supervisor de Logística','2026-09-20'],
+ ['Shopee','São Mateus - ES',85,'Logística','Centro logístico entre os projetos em andamento no polo de São Mateus.','O Capixaba',79,'Assistente de Logística','2026-09-20'],
+ ['Marcopolo','São Mateus - ES',85,'Produção','Expansão da operação; segue abrindo vagas mesmo com automação no processo.','O Capixaba',79,'Encarregado de Produção','2026-09-20'],
+ ['Grupo Brinox','Linhares - ES',0,'Logística','Vaga de Assistente de Logística aberta em Linhares, extensiva a PCD.','Indeed',77,'Assistente de Logística','2026-09-15'],
+ ['Riachuelo','Linhares - ES',0,'Comercial','Vagas abertas na unidade de Linhares.','Vagas.com',77,'Vendedor','2026-09-15'],
+ ['Oxford','São Mateus - ES',85,'Comercial','Expansão e R$ 6 milhões em loja de feirões de porcelanas e porcelanatos.','O Capixaba',77,'Gerente de Loja','2026-09-20'],
+ ['Café Duarte','São Mateus - ES',85,'Produção','Expansão citada entre as empresas locais que ampliam operação no polo.','O Capixaba',75,'Supervisor de Produção','2026-09-20'],
+ ['Farmácia Indiana','Linhares - ES',0,'Comercial','Vaga de repositor aberta em Linhares.','Indeed',73,'Repositor de Mercadoria','2026-09-15'],
+ ['Sollaris Desenvolvimento','Linhares - ES',0,'Financeiro','Vaga de Assistente Financeiro no Centro, com apoio ao fechamento mensal.','Indeed',67,'Assistente Financeiro','2026-09-15'],
+ ['Senar - ES','São Mateus - ES',85,'Administrativo','Primeira unidade do Senar no ES: R$ 20 milhões, terreno cedido, obras previstas para 2027.','O Capixaba',67,'Coordenador Administrativo','2026-09-20'],
+ ['Espírito Santo Papéis','Linhares - ES',0,'Produção','Anúncio de fábrica de embalagens em Bebedouro. Confirmar estágio da obra antes de abordar.','Em Suma',62,'Encarregado de Produção','2026-09-01'],
+ ['Radiex Química','Linhares - ES',0,'Produção','Anúncio de fábrica de fluidos automotivos no Canivete. Confirmar estágio da obra.','Em Suma',62,'Supervisor de Produção','2026-09-01'],
+ ['Sa Express','Colatina - ES',70,'Logística','Abriu unidade em Colatina e anuncia filial em Linhares. Confirmar data do anúncio.','Site da empresa',58,'Assistente de Logística','2026-09-01'],
+ ['Eco Brasil Bioenergia','Aracruz - ES',48,'Segurança do Trabalho','Vaga de TST em senioridade principal, para coordenar programas de prevenção de acidentes e doenças ocupacionais.','Indeed',58,'Técnico de Segurança do Trabalho','2026-09-20'],
+ ['Seatrium','Aracruz - ES',48,'Produção','Estaleiro em Barra do Sahy com vaga operacional aberta. Operação grande, contratação recorrente.','Indeed',58,'Operador de Ponte Rolante','2026-09-20'],
+ ['Suzano','Aracruz - ES',48,'Produção','Entre as empresas que mais contratam em Aracruz no momento.','Glassdoor',58,'Encarregado de Produção','2026-09-20'],
+ ['Farmácias Pague Menos','Aracruz - ES',48,'Comercial','Vaga de atendente na unidade do Centro de Aracruz.','Indeed',58,'Atendente de Farmácia','2026-09-20'],
+ ['Würth do Brasil','Aracruz - ES',48,'Comercial','Vaga de vendedor externo, intermediada pela The Foursales Company.','Indeed',58,'Vendedor Externo','2026-09-20'],
+ ['Zortea Construções','Aracruz - ES',48,'Produção','Construtora entre as que estão contratando em Aracruz. Obra costuma puxar SST junto.','Glassdoor',54,'Encarregado de Obra','2026-09-20'],
+ ['Frisa Frigorífico Rio Doce','Colatina - ES',70,'Produção','Contrata em Colatina e em Aracruz. Frigorífico de grande porte, rotatividade alta.','Glassdoor',54,'Supervisor de Produção','2026-09-20'],
+ ['Grupo Águia Branca - Divisão Comércio','Colatina - ES',70,'Logística','Vaga de almoxarife em Colatina, efetivo CLT.','Indeed',54,'Almoxarife','2026-09-20'],
+ ['Grupo Bertolini','Colatina - ES',70,'Administrativo','Contrata em Colatina, inclusive jovem aprendiz com formação no SENAI. Empresa que investe em formação.','Indeed',54,'Assistente Administrativo','2026-09-20'],
+ ['Grupo Boticário','Colatina - ES',70,'Comercial','Entre as empresas que estão contratando em Colatina.','Glassdoor',54,'Vendedor','2026-09-20'],
+ ['Grupo DPSP - Drogarias Pacheco e São Paulo','Colatina - ES',70,'Comercial','Rede nacional em expansão no interior, contratando em Colatina.','Glassdoor',54,'Atendente de Farmácia','2026-09-20'],
+ ['Sicredi','Jaguaré - ES',65,'Comercial','Vaga de Gerente de Negócios Pessoa Jurídica em Jaguaré. Anúncio de junho: confirmar se segue aberta.','Jobijoba',54,'Gerente de Negócios','2026-06-25'],
+ ['Linhavix Distribuidora','Colatina - ES',70,'Comercial','Vaga de vendedor em Colatina, efetivo CLT.','Indeed',50,'Vendedor','2026-09-20'],
+ ['Moto Scarton','Colatina - ES',70,'Comercial','Concessionária entre as que estão contratando em Colatina.','Glassdoor',50,'Vendedor','2026-09-20'],
+ ['Academia Wellness Club','Colatina - ES',70,'Administrativo','Vaga de recepcionista para atendimento e check-in de alunos. Ciclo de contratação curto.','Indeed',44,'Recepcionista','2026-09-20']
+];
+function semear(){
+  const meus=S.oportunidades.filter(o=>String(o.id).startsWith('m'));  // cadastros manuais ficam
+  S.candidatos=DEMO_C.map((c,i)=>({id:'d'+i,nome:c[0],cargo:c[1],cidade:c[2],area:c[3],aval:c[4],parado:c[5],escolaridade:c[6],pretensao:c[7],origem:'demo'}));
+  S.candidatos.forEach(c=>c.emp=scoreEmpregabilidade(c));
+  S.oportunidades=[...meus,...DEMO_O.map((o,i)=>({id:'o'+i,empresa:o[0],cidade:o[1],dist:o[2],area:o[3],sinal:o[4],fonte:o[5],score:o[6],cargo:o[7],data:o[8],contato:'',link:''}))];
+  S.seedV=SEED_V;S.demo=true;save();
+}
+
+/* =========================================================
+   SCORES
+   ========================================================= */
+function scoreEmpregabilidade(c){
+  const av={'Excelente':40,'Muito Bom':32,'Bom':22}[c.aval]||15;
+  const parado=Math.max(0,22-c.parado*0.18);
+  const mercado={'Administrativo':18,'Comercial':20,'Produção':17,'Logística':16,'Financeiro':14,'Segurança do Trabalho':15,'Tecnologia':13,'Saúde':14}[c.area]||12;
+  const esc=/Superior completo/.test(c.escolaridade)?12:/Técnico|cursando/.test(c.escolaridade)?9:6;
+  const sal=c.pretensao<=3000?8:c.pretensao<=5000?6:3;
+  return Math.max(5,Math.min(100,Math.round(av+parado+mercado+esc+sal)));
+}
+/* ---- score comercial: a própria especificação do projeto, sem IA ---- */
+function scoreComercial(d){
+  const sinal={inauguracao:34,expansao:30,vaga:26,noticia:22,sempre:14}[d.sinal]||18;
+  const vagas=Math.min(20,(Number(d.vagas)||1)*6);
+  const km=Number(d.dist)||0;
+  const dist=km===0?18:km<=20?15:km<=50?10:km<=100?6:2;
+  const porte={grande:16,media:12,pequena:6}[d.porte]||8;
+  const dias=Number(d.dias)||0;
+  const frescor=dias<=7?14:dias<=15?11:dias<=30?7:dias<=45?3:0;
+  return Math.max(0,Math.min(100,Math.round(sinal+vagas+dist+porte+frescor)));
+}
+
+/* ---- aderência candidato x oportunidade ---- */
+const STOP=new Set(['de','da','do','e','a','o','em','para','com','jr','sr','pleno','senior','junior']);
+function palavras(t){return new Set((t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .split(/[^a-z0-9]+/).filter(w=>w.length>2&&!STOP.has(w)))}
+function aderencia(c,o){
+  let s=0;
+  if(c.area===o.area)s+=30;
+  const pc=palavras(c.cargo),po=palavras(o.cargo);
+  let bate=0;po.forEach(w=>{if(pc.has(w))bate++});
+  s+=Math.min(25,bate*13);
+  const cid=t=>(t||'').split(' - ')[0].trim().toLowerCase();
+  s+=cid(c.cidade)===cid(o.cidade)?20:o.dist<=20?15:o.dist<=50?10:o.dist<=100?5:0;
+  s+=c.emp>=75?10:c.emp>=60?7:4;
+  s+=c.aval==='Excelente'?10:c.aval==='Muito Bom'?6:2;
+  return Math.min(100,s);
+}
+function ranking(o,n=3){
+  return S.candidatos.map(c=>({c,a:aderencia(c,o)})).filter(x=>x.a>=40)
+    .sort((x,y)=>y.a-x.a).slice(0,n);
+}
+const melhor=o=>{const r=ranking(o,1);return r.length?r[0].c:null};
+
+/* fonte de job board = vaga realmente publicada; notícia ou site = perfil provável */
+const BOARDS=/indeed|catho|gupy|linkedin|glassdoor|infojobs|vagas\.com|jobijoba|jooble|adzuna|bne|sine|trabalha|empregos|guia/i;
+const temVaga=o=>BOARDS.test(o.fonte||'');
+
+/* ---- onde procurar: buscas prontas, custo zero ---- */
+function linksBusca(c){
+  const cid=(c.cidade||'').split(' - ')[0].trim();
+  const E=encodeURIComponent;
+  return [
+   ['Google · vagas do último mês',`https://www.google.com/search?q=${E('"'+c.cargo+'" vaga '+cid)}&tbs=qdr:m`],
+   ['Google · sinais de expansão',`https://www.google.com/search?q=${E('("inaugura" OR "amplia" OR "nova unidade" OR "expansão") empresa '+cid)}&tbs=qdr:m`],
+   ['LinkedIn Jobs',`https://www.linkedin.com/jobs/search/?keywords=${E(c.cargo)}&location=${E(cid)}`],
+   ['Indeed',`https://br.indeed.com/jobs?q=${E(c.cargo)}&l=${E(cid)}&fromage=30`],
+   ['Catho',`https://www.catho.com.br/vagas/?q=${E(c.cargo)}&where=${E(cid)}`],
+   ['Gupy',`https://portal.gupy.io/job-search/term=${E(c.cargo)}`],
+   ['Google Maps · empresas da região',`https://www.google.com/maps/search/${E('empresas '+cid)}`],
+   ['SINE Linhares · painel diário de vagas','https://linhares.es.gov.br/sine-vagas-para-linhares/'],
+   ['Criar alerta automático',`https://www.google.com/alerts`]
+  ];
+}
+
+/* ---- modelos de abordagem ---- */
+const TPL={
+ email:`Assunto: Profissional já avaliado para {{cargo}}\n\nOlá, tudo bem?\n\nSou {{consultor}}, da Evolue Treinamento e Desenvolvimento.\n\nVi que a {{empresa}} {{sinal}}. Entro em contato porque temos no nosso banco de talentos um profissional para {{cargo}}, já entrevistado e avaliado pela nossa equipe.\n\nSe fizer sentido, encaminho o relatório completo sem compromisso: currículo, resultado da entrevista e avaliação comportamental. Você decide se vale conversar com ele.\n\nConsegue cinco minutos esta semana?\n\n{{consultor}}\nEvolue Treinamento e Desenvolvimento\n{{contato}}`,
+ whats:`Olá! Aqui é {{consultor}}, da Evolue.\n\nVi que a {{empresa}} {{sinal}}. Temos um profissional para {{cargo}} já entrevistado e avaliado.\n\nPosso te enviar o relatório dele, sem compromisso?`,
+ ligacao:`ABERTURA (10s)\nBom dia! Falo com o responsável pelas contratações? Aqui é {{consultor}}, da Evolue.\n\nCONTEXTO (15s)\nVi que a {{empresa}} {{sinal}}. Foi por isso que liguei.\n\nDIAGNÓSTICO (15s)\nComo vocês estão conduzindo a contratação para {{cargo}}? Está sendo feito internamente?\n\nOFERTA (15s)\nTemos no banco um profissional para essa função, de {{cidade_candidato}}, já entrevistado e avaliado. Consigo mandar o relatório hoje, sem compromisso e sem custo para você avaliar.\n\nFECHAMENTO (5s)\nQual o melhor e-mail para eu encaminhar?`
+};
+function preencher(t,o,c){
+  const m={empresa:o.empresa,cargo:o.cargo||'essa função',cidade:o.cidade,
+    sinal:(o.sinal||'está contratando').replace(/\.$/,'').replace(/^./,x=>x.toLowerCase()),
+    consultor:cfg.consultor||'[seu nome]',contato:cfg.contato||'[telefone e e-mail]',
+    cidade_candidato:c?c.cidade:'nossa região',avaliacao:c?c.aval:''};
+  return t.replace(/\{\{(\w+)\}\}/g,(_,k)=>m[k]??'');
+}
+const temIA=()=>!!(cfg.key||cfg.proxy);
+
+/* contador simples de consumo, para você acompanhar o custo */
+const CUSTO={varreduras:0.25,analises:0.02,textos:0.01};  // US$ estimado por operação
+function contar(tipo){
+  const m=new Date().toISOString().slice(0,7);
+  if(!S.uso||S.uso.mes!==m)S.uso={mes:m,varreduras:0,analises:0,textos:0};
+  S.uso[tipo]=(S.uso[tipo]||0)+1;save();renderUso();
+}
+function renderUso(){
+  const el=$('#usoOut');if(!el)return;
+  const u=S.uso||{varreduras:0,analises:0,textos:0};
+  const t=(u.varreduras*CUSTO.varreduras)+(u.analises*CUSTO.analises)+(u.textos*CUSTO.textos);
+  el.innerHTML=`<b>${u.mes||'—'}</b>\n${u.varreduras} varredura(s) com busca na web · ${u.analises} análise(s) de manchetes · ${u.textos} texto(s) refinado(s)\nEstimativa acumulada: US$ ${t.toFixed(2)} (cerca de R$ ${(t*5.4).toFixed(2)})\n\nSão estimativas de ordem de grandeza. O valor real está em console.anthropic.com, em Usage.`;
+}
+
+const temp=s=>s>=85?'quente':s>=70?'alta':s>=55?'media':'frio';
+const corTemp=s=>({quente:'#FF5C2B',alta:'#F5A623',media:'#3E92CE',frio:'#7C93B0'})[temp(s)];
+const rotTemp=s=>({quente:'Muito alta',alta:'Alta',media:'Média',frio:'Monitorar'})[temp(s)];
+const clsScore=s=>s>=85?'q':s>=70?'a':s>=55?'m':'';
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+const $=q=>document.querySelector(q), $$=q=>[...document.querySelectorAll(q)];
+const esc=t=>String(t??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+function renderTudo(){renderKpis();renderRadar();renderParados();renderCand();renderOps();renderKb();renderConsultas();renderMonitor();}
+
+function renderConsultas(){
+  const li=(t,s)=>`<li><b>${esc(t)}</b>${s?' — '+esc(s):''}</li>`;
+  const vazio='<p class="vazio">Nada por aqui ainda.</p>';
+  const parados=S.candidatos.filter(c=>c.parado>30&&(c.aval==='Excelente'||c.aval==='Muito Bom'))
+    .sort((a,b)=>b.parado-a.parado).slice(0,8);
+  const semProsp=S.oportunidades.filter(o=>!S.leads[o.id]).sort((a,b)=>b.score-a.score).slice(0,8);
+  const porCidade={};S.oportunidades.forEach(o=>{const c=(o.cidade||'?').split(' - ')[0];porCidade[c]=(porCidade[c]||0)+1});
+  const cidades=Object.entries(porCidade).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const saldo={};
+  AREAS.forEach(a=>{saldo[a]={c:0,o:0}});
+  S.candidatos.forEach(c=>{if(saldo[c.area])saldo[c.area].c++});
+  S.oportunidades.forEach(o=>{if(saldo[o.area])saldo[o.area].o++});
+  const escassez=Object.entries(saldo).filter(([,v])=>v.o>0).sort((a,b)=>(a[1].c/a[1].o)-(b[1].c/b[1].o)).slice(0,8);
+  const quentes=S.oportunidades.filter(o=>o.score>=70&&!o.contato).sort((a,b)=>b.score-a.score).slice(0,8);
+  const semMatch=S.oportunidades.filter(o=>ranking(o,1).length===0).slice(0,6);
+
+  const blocos=[
+   ['Excelentes parados há mais de 30 dias', parados.length?'<ol>'+parados.map(c=>li(c.nome,`${c.cargo} · ${c.parado} dias`)).join('')+'</ol>':vazio],
+   ['Empresas que ninguém prospectou', semProsp.length?'<ol>'+semProsp.map(o=>li(o.empresa,`${o.cidade} · score ${o.score}`)).join('')+'</ol>':vazio],
+   ['Cidades com mais demanda', cidades.length?'<ol>'+cidades.map(c=>li(c[0],c[1]+' oportunidade(s)')).join('')+'</ol>':vazio],
+   ['Áreas com mais demanda que oferta', escassez.length?'<ol>'+escassez.map(([a,v])=>li(a,`${v.c} candidato(s) para ${v.o} vaga(s)`)).join('')+'</ol>':vazio],
+   ['Quentes sem contato levantado', quentes.length?'<ol>'+quentes.map(o=>li(o.empresa,`score ${o.score} · falta contato`)).join('')+'</ol>':vazio],
+   ['Vagas sem ninguém aderente na base', semMatch.length?'<ol>'+semMatch.map(o=>li(o.empresa,`${o.cargo||o.area} — oportunidade de captação`)).join('')+'</ol>':vazio]
+  ];
+  $('#consultas').innerHTML=blocos.map(b=>`<div class="card qa"><h4>${b[0]}</h4>${b[1]}</div>`).join('');
+  $('#cardIA').style.display=temIA()?'':'none';
+}
+
+function renderKpis(){
+  const exc=S.candidatos.filter(c=>c.aval==='Excelente'||c.aval==='Muito Bom').length;
+  const hoje=S.oportunidades.filter(o=>o.data===new Date().toISOString().slice(0,10)).length;
+  const abord=Object.values(S.leads).filter(f=>f!=='Novo lead').length;
+  const conv=Object.values(S.leads).filter(f=>f==='Convertido').length;
+  const taxa=abord?Math.round(conv/abord*100):0;
+  const k=[[exc,'Candidatos excelentes ou muito bons'],[S.oportunidades.length,'Empresas no radar'],[hoje,'Encontradas hoje'],[abord,'Já abordadas'],[taxa+'%','Taxa de conversão']];
+  $('#kpis').innerHTML=k.map(x=>`<div class="card kpi"><div class="n">${x[0]}</div><div class="l">${x[1]}</div></div>`).join('');
+}
+
+function renderRadar(){
+  const svg=$('#scopeSvg'),cx=310,cy=232,R=205;
+  const anel=d=>d===0?.28:d<=20?.5:d<=50?.7:d<=100?.87:1;
+  const vis=S.oportunidades.filter(o=>S.raio>=900?true:o.dist<=S.raio);
+  $('#scopeSub').textContent=`${vis.length} empresas dentro do raio · base em ${cfg.cidade}`;
+  let g=`<defs><radialGradient id="sw"><stop offset="0" stop-color="#FFF" stop-opacity=".16"/><stop offset="1" stop-color="#FFF" stop-opacity="0"/></radialGradient></defs>`;
+  [.28,.5,.7,.87,1].forEach((f,i)=>{g+=`<circle cx="${cx}" cy="${cy}" r="${R*f}" fill="none" stroke="rgba(255,255,255,${i===4?.22:.12})" stroke-dasharray="${i===4?'0':'3 5'}"/>`});
+  ['Cidade','20 km','50 km','100 km','+100 / remoto'].forEach((t,i)=>{const f=[.28,.5,.7,.87,1][i];g+=`<text x="${cx}" y="${cy-R*f+13}" fill="rgba(255,255,255,.4)" font-size="9" font-family="JetBrains Mono,monospace" text-anchor="middle">${t}</text>`});
+  AREAS.forEach((a,i)=>{const ang=(i/AREAS.length)*Math.PI*2-Math.PI/2;
+    g+=`<line x1="${cx}" y1="${cy}" x2="${cx+Math.cos(ang)*R}" y2="${cy+Math.sin(ang)*R}" stroke="rgba(255,255,255,.07)"/>`;
+    const la=ang+Math.PI/AREAS.length, lx=cx+Math.cos(la)*(R+22), ly=cy+Math.sin(la)*(R+22);
+    g+=`<text x="${lx}" y="${ly}" fill="rgba(255,255,255,.42)" font-size="9.5" font-family="JetBrains Mono,monospace" text-anchor="middle" dominant-baseline="middle">${a.slice(0,13)}</text>`});
+  g+=`<g class="sweep"><path d="M${cx} ${cy} L${cx} ${cy-R} A${R} ${R} 0 0 1 ${cx+R*0.71} ${cy-R*0.71} Z" fill="url(#sw)"/></g>`;
+  vis.forEach((o,i)=>{
+    const ai=Math.max(0,AREAS.indexOf(o.area));
+    const ang=((ai+.5)/AREAS.length)*Math.PI*2-Math.PI/2+((i%3)-1)*0.075;
+    const r=R*anel(o.dist)*(0.9+((i%4)*0.045));
+    const x=cx+Math.cos(ang)*r,y=cy+Math.sin(ang)*r,rad=4+o.score/22;
+    g+=`<circle class="blip" data-op="${o.id}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rad.toFixed(1)}" fill="${corTemp(o.score)}" fill-opacity=".9"><title>${esc(o.empresa)} — ${esc(o.cargo)||esc(o.area)} — score ${o.score}</title></circle>`;
+  });
+  g+=`<circle cx="${cx}" cy="${cy}" r="17" fill="rgba(255,255,255,.1)"/><image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABcCAYAAACmwr2fAAAS9UlEQVR42u2de7Rcd1XHP3Nm5uZ10yQ3aZq+0kqbQm0KQQqV1oA87MNCbW2paBWsIvFFbZXKWoouBSygoCKVanEJinFJS6vVUIryKEEI1lWNYAyhbyRtSJr3fd+Zc/xjf7fzuycz984587gzNzlrzbrtzdyZc377u/f+7sdv/wpJkpzFiavRVQAi/awCk8AEMKXfLQQGgQGgpL+Z0vvG9aroMxbqVQRiveb8Kp2Qcd3LhV4BhiXURcAa4Dzge4EXAGcBq/VvJSDR34wBR4DdwGPATuB/gCeBg3r/Yr1/ToFQOGEBjtH2GBiRFp8MbABeAVwsoZ+U8/OnBIJ/AbYA/63vW6rvTE4AYO4EX5SAjspMvwS4GrhMWh5eobAKqZ9+JcHPJPiOEAwPAn8GbJM1WCA3cwIAXbyKMtlHgCHgKuCngJemhBlLiIU6wm72SoJXMfjd3wLvBfYAy3U/JwDQBR+fAIeBFcANwFuAc+oIPerA9/vnO9fYDdwK/DOwspuW4HgEQEmmvgC8AbgZWKd/q3ZQ6I2uSkAg3wHc1U0QlI5DrX9OJv63gY0pwRfnCJAeCfy+Qso7gFXdcAfHiwUoidlH0vhbtdBzofGzuYUi8PPAJ2UJsoKgkCKixz0ASsABxe9/BLw80Ppij92rW4Jx4EpglyKEZnIFRQl9Sj9L1JJOyUxmcb6Hd/vE7j8t4VdSTLwX3dRi4IN6hqRJ4R/GklZLZTliAT+eKXKJ5rHw0QL8KvCJgFiVWgjluhWaVoGLgDcCh2YBa6T3XC638UXgIeAB4Nf0rFONZD0fXUCkBRwH3gfcFJjQfgG8a+2TwKtnAcshcZp3NnjPNuBNWA2jmLYo0TwV/iSWZbtJJr+TRC/Rd6ZfraR33RU8D7gCS1QV6wj/iADyTn1fNUg2xVqHlwO/K/cQzWcXUNBDjyuWvjaIsQsdEnjINdKvsIoY5/yeBLh+BjnFwFtTEUQhAHxZv78BOB8rUkXzMQ/gAh4GPgK8PhB+O81yEgjYr93A48B+aVwRyy6ehmUWB4K/jzJagQLw/cBa4Lv6rCTw60NYZbJRDsOVogRcgFUlF81HAEQSwHuF9nYKP50SPgJ8TUTrEfnpQ0F04eZ5sQT3auBngLMzgsCFN4hVJO/HClXVlBsoNmlNyo1i5PkQ5z8H/BzwC20Ufpo4PgzcA3we+LYEMYBV8QbruJkq8ARW9t0M/Kn8eRYQ+HtfDNyXSvKUsN6Cp7GehGQGK1DA+hLKaV7S7wDw+HcjcHubkjuhPwXYKrfyJfGLJcCylJ9u5OMX6P2jWHbv8yJ2zYLABb6uDoN3N/A3WK/CVB2yOyWhfxXYrnuJ5wsJ9AVYLu0q01q5NjT3ReDrCp+uBz4n3zmk72mW6XtmbrHcxF9mSO6EAFgj8x+nLMxy4G7gU7qvKAXIMrAXuK2RrEt9rv2HgD+Qr21V+/3vJ7CizF3S3GUBm2/lsxcBXwm+J8kA1mXUGkYipjecLMTqG7uAnwZO1+dOKCn0LpHUwXrP0K+JIBf+VcBft1H4O7WYD4vJF2lPWdb7C5eKPK5uEgD+nt3Aq+SC6rkC723wnsWFwDMChRPS6nyxAL6Yy4F3Z9SkmYT/T8AtWK/AapnudtbkIwlwLCXcLK6gEUiQexpR5s9J4mDwjA1vql+1/5exfr24hedw4d+lrOGktHSqg+FqlntNAjJXnQUI/iyDWOPqIppoP4/6UPtHgecr7GtF+BUt2J8Avy7Bl+lcJ04soSxpQqvT1xH59KgJ0hmnso/FAHjF9PeW+lD7R+WnBwNSlEf4JeDPgd/Cum86uVnD3dbKIITMYgH2CQADZKsvROIGhYDgnhQCqZ8AEMnHXajQLMkpfC8JbwF+g1rtPOmw5ZrEUsPFDJbL7+lpaiXdOMN6DWPt7TdKYbYCd+qzSkDSbwAYU6izMGfGzxM8O8QhlqQWupMAqALfl8rwNXvtyugynCfdKBfn18XAC7WGpX7iAAUx6LXAdeTr6HEhjwC/KDCV6c7WrKpCsR/IyL38GXdkvNeqNP7WIBlV1c/LgUtlHaJ+AUBRgnudwr84R+jnWnc7lhY9ie60Xrvlej5WkWvWdXmYuAd4VFYvaVJZKspjDAVczwlgDJyp9xT6BQBVLcD1Oc21h0hfBT4qvz/VpXv3+P8KpreANwPYBKs47qVOIWcG4JSx8vHj1FLmlSAa+AaWWUz6AQCRmP+FwItSpjErC393jhCs1cuTVm/I8d0FrICU5HjeGNv7cJDa9vUIazbdLv4Tl/oEABPAD1Hby1fKof33YnX8PL32rbiug7JcWaqAznGGsSrkYrJxlVgCfhhrL79aLu8rwBeCELovwkAvpLwmZ/Iqkgn8iMxeN/fjJ9K+TRmjDQfKQ1jDyYocfMWbSb6NFbdc3kvDe+l1F+BVre8RgcpqQj19+jmsvLukiwDwXoUrse3mcQbX5WXtu2m9vL0Am3NwEtY+NkStd6DnAeAE6sXUyqFZfShY00S39wJ46ve2HH9XAL4lC7C0xWjFm1jHsIznZdS2yfWFBYiDBEqScSEj4Cmx/0G6t+3a27XeJK3LkrL28O/jWA2g1EZlGhUf+f/ycK8DIFb4tz6H/3dT/1kJo1t8x+P+s4G3k68H8Bmsy6eduQpPpW/Qa6zXE0Eev64QB8jq//3ZvkRt/303w9bfkb/NUvf3996p2H+gzfftPOQ14lZ9AYA1Ct3IuJC+Z24Hx/bTddL0Pwf8OHAN2TqVXPufFGdZ1maXlQRWcKOvSa8DoIJtsChmFKBrzbeYvqGi05o/gnXw/h7ZCz6u/e9X9NAJq+UAOB84FZjodQ5QlQXIQwDBxrKNd4HrhJ2+d8htZTH9bim2KmG1vEOE1ZtFBoFzex0AvqircgDAr0e7GPMfkOZfTK3bKIvmj2PNKcUOr6cD6wXAVD/UApbnNMdg3bTFDpt/773fhG0By5OqjoAPAP8l7Yw7pP1LqG0RO7cfwkAUs+ZBOyJknQRAGWvXuhrbl5i1Pd27k/4V+LBcR6VD2l8BTgnW5kxgoJdrAW4aB3JEAJ5AGu6gSS1hG1IvwXoLo4z36STxINaOXiTbrqGsAKgyferpKcCi+TwjqIL14XViUUsKMV+IjZ9ZkiPe9/f/CraJNGvFL8+1NuVal/QDAKo5SWDSIW0qS2svwIo1K3OEfO4q3o9t+x6isyVqLy+fGvxuEBjshyhgrAVmXqL1nUNp4e/HUqn3YDuIsramO0m8TwDoRn+Cp9RPC3430C8u4GhOAlhqs1l1wncplqdfnYP0ufC3yfQvpTsdyd6VdHpKQQb6AQAHMpKrMBHkjRSFFhewhGUUr5XZX0G2+n7I+HdibdlxF0JUv/9Jsf4hUqPuexkA7rf25ACAP+RptJZRC+cL3wx8jNqeuzw+/2ngJ7BUb7fqEw6A9Uzf5l4FKr0eBpaw0mheADyvBQ5Qwqp6YI2UPxt8bh7hfwebX7QbK/NWuryeL0v9/xQw1usWoAw8S228e9bJGueTvajiJv8AVoe4R8Kv5gCip4T/F+sKfmIOhO97BC5O3f8oMBL1gQXYL60hJwCm9cA1ETnEMvlXYce6XBoIMqvwS9i2rmuwHv1lXRa+N6esVw4gtIaHgOFeJ4HeGr0rIwDcd5+KTcwYn0V4rvVH9N/vU4JndUDeyCH8fxNxnCuzH8n/Xxb4f1/DPcBov/QEbs+RDHL2f4kWIZpF6/dhQxm3YBO9wsGQWayWA+Z+mf3DWKawMgfr5x1VV6UUAxHSyX7oCRwA/jMQVhb0I/TXY9w+MOGQBPYeCW19kNzJGnr6Pvw/xs4ggjk6DSywnhuxlrp05LKLPtga5lOwdooMZiGCjvYNWNp2NBCqM/zD2FjZB4G3BRYnawHJ992NAL+E9QMOkr2TqRMW9M0p6+nPthMo9wMAPAP3NaY3NGRJvlwrHjAgd7BfoPgE1n69jnzHx/hIlhLWe/h67Bi4VXSuFtEs+I+K+f9g4MqcBB5GO477qRr4WbIPgnS03yBC9x0sHfpBaf2V1EbDZNX6EDAfl/B30N29hzNpfkVWLbRC/nO7SOCCftgb6J0sX1Z4tipDcsdN+mpsjvCYFmVpKkmT9X4cXM9is/rvE8sf7AHh+zkCr8KGQdQD9xc9NO6XQZHebn0H8JNkb7tKAyYPyUvPEP4UdhDDbuUaqnNo8tOgHwc+I/6TBnkFeK1I4KJ+OkJlAPg78o2HCRsikxxJnfBcwcdFrDZhfQFey+8F4ZexDOamOsL3Z3+E2rkBcT8BYBD4dyVX8szuLeQUvANmFPhDbNLHFqy8Wu4Bk582/RuwE0jrFawKclfeKdVXgyJ9RNrHgofp1JW2FPfJn74L21K1vIdMfkj6ysCHqJ0KEp4vEMk6PEDQedwP28P9VAxH7WZs8kVE+7dOVQNtKmCHOf+IkjqPiYAWmZvEzmzrdBhrLd/AsV1K7sLuxQpTC+jBQZHhYUeJED1KbUTqKqykeSk28CBpE4BDcuf+8kFsfvCXdU8rgnvqRYK8V2b/jXUIsluyMYWr07qkSnMo6EJAzmKFJRPUJmIuU7LmIgn9JUxvaWrn/biP/7QWyXlGGC724lVWPP8W4DcbhLUO7k8qTzHtUGoPA6M6WkETvys0+P9CHQYeDjKeoja8MJLPOhkbpboemwhyIZbDjuqY6axkjhmeZ4+E/hnsfJ8yTYxZ7wFrWZTm3yS/H9dJlPm6DysjeMxGWW+WOEqt/l4IYuT0K00s4pRwY6ZPqw7730sS9HKs0eJMbHvSOqxkexb1t4FVAz9X6IDVqmJFoK9jNfPJHhZ8yNv2YuNub28g/FD7P4w1oxxzJH0hSZJzpHEJliMf15umgleF2jk5SYBAn0A5gBVtFslsLpUwh7AdKKdgtfk1ysoNzeKPqQO8Tlz+LMPY+PkHgkxj3IPCL0k+E9hG0ptnEX4EfBOriDY8M2hSgruF2iyeKS3KRB0g+KTpgeC1QABYkEFD49TNF2h8AOJMAkyCh41ymFLPMWzG0rp3YqnnhT1E+nxdDkqB7gJ+eIaMZrgu7xABrDtuxjnAUQnvlVjh5JUzaGmzwk1SWpZXq5PUQyUzACXvARJhq/Q9WDn3GWpt1PEcC34cKzVfiXUrzXZIlkcCH8KmhZ7cCMwOAK8YHdXP0+QWXqa48hx9SLkJoSczkMRmhEAD7lHveg6bAvYINo1rI/kPkArDwd3YWNl7g2igm0AoBLmPI+JHt2F1EGZ5xnAu8nXMMmQ6XQzyD52U2ajIMgzJ9KwVaTsXm4K1Rj5zsINJpQllsL6LTb18AqtlP46Vdw8IuCuBf8Q2bLZyilj4t1/ASsfbBP4lgdtIOiD0KHjmYXGnG7Hx9qs49jTTRhbwWSxlvY9Z9h80qgaGkUCcIoV+HPsAtVM0l0sAK3WjK6U1g0o8LNQClgNf7bt3JwS2EaH9kHzd/uDlQh4P/F6Z2hDkshbsZOz0r1bPEUyCRFMiS/AXWGuaHwQ5EKSn8zR/pC1cRWtQlXJdh+0gOqMJrSfgU2PAj8oqztqF3Gw5uF7yJjxGPYwS4gZ/F6UeuF4YmQagRxoebUSp7w8X3rt612Gl2lNp33mCfm3F6gJblVKdCkhwKUXIZsqbeKjsCpBIaS7CWsivCELiZkrXcaCsb1ZCq6nGlHb0AxTqkLx6fn22RFJhBuJHkxpWUk78PGW+zqA9h0mngXAYq0xuBf4DG+12QBYqSeUt6j3LgFj56Up8XaJs59mp72ymZyEOLNEmkdhVzUYw/Xpy6GwgcOK0WWBo14ni1RRX8mufyOhTIpD75Mq8gOWHSA+JN50lYZ+euq84cD2FDMCcBN4K/EMW4c9XADgIhrEizkexs3rydAHNFjFA6yNoqnVIYDOXg/oAtnXtIXL0I87XETEVadwR4MeAv6JWP2jXWcBh9TCsc4R8KP2qBP8ebjwpkm2YtHc7eyfyVnI2o87nGUFVmd6yspxvk+/2en47w7g0aS02eNUjtFmfycF3Nzad7DFamC42nwEQsuMhbP7u5YrtQ2uQ9MlzxEE6+Basy3mKFjuR5ysHaMQLRoJQ6e1KbmVh3HMh+LAJ9n5sC9tjAnXLCanjCQChxTsgJn6z0qsLegwI6V1K27F2rwcVQi6mTYWq4w0AoTXwAsuLFD9fi2UsQ2beTTDU2428AxtC+ffK8C2jzTWJ4xUAIZMfwbJxF2A9ddcwvfXMBdPu/oRGoWSM9SJuxrbDHZHgO9KMejwDgJSWj0rL1mDbql6HZehWNCBk9bqkZhJ2WMquZ1m+KYFvwbqTKlg9paNdyCcAMB0IPlFjWP99BvBS4BVYafwc2teSdgDbobMNO9bmG1j2cKF8fIEutKadAEDjmB5qlcoYy917Ofw8gWEtlnpdGuQcosC8O8/YjzWfPiUG/yhWP9ir73BiVwosTHce9gQAmgKD77yZ0MujBc/xe8nby9O+h8DL3CPUei0LAsoCppeU56Tr6P8AX4vrXbqN/x0AAAAASUVORK5CYII=" x="${cx-13}" y="${cy-9}" width="26" height="18"/>`;
+  svg.innerHTML=g;
+  $$('#scopeSvg .blip').forEach(b=>b.onclick=()=>abrirOp(b.dataset.op));
+}
+
+function renderParados(){
+  const l=[...S.candidatos].filter(c=>c.aval!=='Bom').sort((a,b)=>b.parado-a.parado).slice(0,9);
+  $('#paradosN').textContent=l.length+' em espera';
+  $('#feedParados').innerHTML=l.map(c=>`<div class="feed-i" data-c="${c.id}">
+    <div class="r1"><b>${esc(c.nome)}</b><span class="score ${clsScore(c.emp)}">${c.emp}</span></div>
+    <div class="m">${esc(c.cargo)} · ${esc(c.cidade)}</div>
+    <div class="m" style="color:var(--txt-3)">${c.parado} dias sem processo · ${esc(c.aval)}</div></div>`).join('');
+  $$('#feedParados .feed-i').forEach(e=>e.onclick=()=>abrirCand(e.dataset.c));
+}
+
+function candFiltrados(){
+  const q=($('#fBusca').value||'').toLowerCase(),a=$('#fAval').value,ci=$('#fCidade').value,o=$('#fOrd').value;
+  let l=S.candidatos.filter(c=>(!q||(c.nome+c.cargo+c.cidade).toLowerCase().includes(q))&&(!a||c.aval===a)&&(!ci||c.cidade===ci));
+  l.sort((x,y)=>o==='nome'?x.nome.localeCompare(y.nome):o==='parado'?y.parado-x.parado:y.emp-x.emp);
+  return l;
+}
+function renderCand(){
+  const sel=$('#fCidade'),v=sel.value;
+  sel.innerHTML='<option value="">Todas as cidades</option>'+[...new Set(S.candidatos.map(c=>c.cidade))].sort().map(c=>`<option${c===v?' selected':''}>${esc(c)}</option>`).join('');
+  const l=candFiltrados();
+  $('#tbCand').innerHTML=l.length?l.map(c=>`<tr>
+    <td class="who"><b>${esc(c.nome)}</b><small>${esc(c.cargo)}</small></td>
+    <td>${esc(c.cidade)}</td><td>${esc(c.area)}</td>
+    <td><span class="tag ${c.aval==='Excelente'?'ok':''}">${esc(c.aval)}</span></td>
+    <td style="font-family:var(--mono);font-size:12px;color:${c.parado>45?'#C33C0F':'var(--txt-2)'}">${c.parado}d</td>
+    <td><div style="display:flex;align-items:center;gap:8px"><div class="bar"><i style="width:${c.emp}%;background:${corTemp(c.emp)}"></i></div><span style="font-family:var(--mono);font-size:12px">${c.emp}</span></div></td>
+    <td><button class="btn sm ghost" data-c="${c.id}">Buscar vagas</button></td></tr>`).join(''):'<tr><td colspan="7" class="empty"><b>Nenhum candidato com esses filtros</b>Ajuste a busca ou sincronize com o Quickin.</td></tr>';
+  $$('#tbCand button[data-c]').forEach(b=>b.onclick=()=>abrirCand(b.dataset.c));
+}
+
+function renderOps(){
+  const o=$('#fOpOrd').value,q=($('#fOpBusca').value||'').toLowerCase(),
+        ar=$('#fOpArea').value,tp=$('#fOpTipo').value,mt=$('#fOpMatch').value;
+  const sel=$('#fOpArea');
+  if(sel.options.length<2)sel.innerHTML='<option value="">Todas as áreas</option>'+AREAS.map(a=>`<option>${a}</option>`).join('');
+  const l=S.oportunidades.filter(x=>
+      (!q||(x.empresa+' '+x.cargo+' '+x.cidade+' '+x.area).toLowerCase().includes(q))
+    &&(!ar||x.area===ar)
+    &&(!tp||(tp==='vaga')===temVaga(x))
+    &&(!mt||(mt==='sim')===(ranking(x,1).length>0)))
+    .sort((a,b)=>o==='data'?b.data.localeCompare(a.data):o==='dist'?a.dist-b.dist:b.score-a.score);
+  $('#gridOps').innerHTML=l.length?l.map(x=>{
+    const top=ranking(x,2);
+    return `<div class="card op">
+      <div class="top"><div><h3>${esc(x.empresa)}</h3><div class="loc">${esc(x.cidade)} · ${x.dist?x.dist+' km':'mesma cidade'}</div></div>
+      <span class="score ${clsScore(x.score)}">${x.score}</span></div>
+      <div class="vaga ${temVaga(x)?'aberta':''}">
+        <span class="rot">${temVaga(x)?'Vaga publicada':'Perfil provável · vaga não publicada'}</span>
+        <b>${esc(x.cargo)||esc(x.area)}</b></div>
+      <div class="why">${esc(x.sinal)}</div>
+      ${top.length?`<div class="cands">${top.map(t=>`<div class="cand-l"><b>${esc(t.c.nome.split(' ').slice(0,2).join(' '))}</b><span>${esc(t.c.cargo)}</span><span class="pc">${t.a}%</span></div>`).join('')}</div>`
+        :'<div class="nada">Ninguém na base atinge 40% de aderência — oportunidade de captação.</div>'}
+      <div class="loc" style="color:var(--txt-3)">${esc(x.fonte)} · ${x.data.split('-').reverse().join('/')} · chance ${rotTemp(x.score).toLowerCase()}</div>
+      <div class="acts"><button class="btn sm" data-op="${x.id}">Abrir dossiê</button>
+      <button class="btn sm ghost" data-lead="${x.id}">${S.leads[x.id]?esc(S.leads[x.id]):'Enviar ao funil'}</button></div></div>`}).join('')
+    :'<div class="card empty"><b>Nada no radar ainda</b>Clique em “Varrer a base agora” para a IA procurar empresas.</div>';
+  $$('#gridOps button[data-op]').forEach(b=>b.onclick=()=>abrirOp(b.dataset.op));
+  $$('#gridOps button[data-lead]').forEach(b=>b.onclick=()=>{if(!S.leads[b.dataset.lead]){setFase(b.dataset.lead,'Novo lead');toast('Enviado para a prospecção')}else{ir('crm')}});
+}
+
+function renderKb(){
+  $('#kb').innerHTML=FASES.map(f=>{
+    const l=S.oportunidades.filter(o=>S.leads[o.id]===f);
+    return `<div class="col" data-f="${esc(f)}"><h4>${esc(f)}<span>${l.length}</span></h4>
+    ${l.map(o=>`<div class="lead" draggable="true" data-id="${o.id}"><b>${esc(o.empresa)}</b><small>${esc(o.cidade)} · score ${o.score}</small></div>`).join('')||'<div style="font-size:11.5px;color:var(--txt-3);padding:6px 4px">vazio</div>'}</div>`}).join('');
+  $$('.lead').forEach(el=>{
+    el.ondragstart=e=>{e.dataTransfer.setData('id',el.dataset.id);el.classList.add('drag')};
+    el.ondragend=()=>el.classList.remove('drag');
+    el.onclick=()=>abrirOp(el.dataset.id);
+  });
+  $$('.col').forEach(col=>{
+    col.ondragover=e=>{e.preventDefault();col.classList.add('over')};
+    col.ondragleave=()=>col.classList.remove('over');
+    col.ondrop=e=>{e.preventDefault();col.classList.remove('over');setFase(e.dataTransfer.getData('id'),col.dataset.f)};
+  });
+}
+
+/* =========================================================
+   DRAWER
+   ========================================================= */
+function abrir(html){$('#drawerBox').innerHTML=html;$('#drawer').classList.add('on');$('#scrim').classList.add('on');$('#drawer').setAttribute('aria-hidden','false')}
+function fechar(){$('#drawer').classList.remove('on');$('#scrim').classList.remove('on');$('#drawer').setAttribute('aria-hidden','true')}
+$('#scrim').onclick=fechar;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')fechar()});
+
+function abrirCand(id){
+  const c=S.candidatos.find(x=>x.id===id);if(!c)return;
+  abrir(`<div class="drawer-hd"><div><div class="eyebrow">Candidato</div><h1 style="font-size:21px">${esc(c.nome)}</h1><p class="sub">${esc(c.cargo)}</p></div><button class="btn ghost sm" onclick="fechar()">Fechar</button></div>
+  <div class="drawer-bd">
+    <dl class="kv"><dt>Cidade</dt><dd>${esc(c.cidade)}</dd><dt>Área</dt><dd>${esc(c.area)}</dd>
+    <dt>Avaliação</dt><dd>${esc(c.aval)}</dd><dt>Escolaridade</dt><dd>${esc(c.escolaridade)}</dd>
+    <dt>Pretensão</dt><dd>R$ ${Number(c.pretensao).toLocaleString('pt-BR')}</dd>
+    <dt>Sem processo</dt><dd>${c.parado} dias</dd>
+    <dt>Empregabilidade</dt><dd><b style="font-family:var(--mono)">${c.emp}</b>/100</dd></dl>
+    <div class="eyebrow" style="margin-top:22px">Onde procurar por este perfil</div>
+    <p style="font-size:12.5px;color:var(--txt-2);margin-bottom:10px">Buscas já montadas com o cargo e a cidade. Abrem em nova aba, sem custo nenhum.</p>
+    <div class="links">${linksBusca(c).map(l=>`<a href="${l[1]}" target="_blank" rel="noopener">${esc(l[0])}</a>`).join('')}</div>
+    ${temIA()?'<button class="btn" style="margin-top:16px" id="dBuscar">Procurar empresas com IA</button>':''}
+    <button class="btn ${temIA()?'ghost':''}" style="margin-top:16px" id="dNova">Cadastrar manualmente</button>
+    <div id="dOut"></div></div>`);
+  $('#dNova').onclick=()=>formOportunidade(c);
+  if(temIA())$('#dBuscar').onclick=()=>buscarOportunidades(c);
+}
+
+/* ---------- cadastro manual de oportunidade ---------- */
+function formOportunidade(c,pre){
+  pre=pre||{};
+  const cid=c?c.cidade:cfg.cidade;
+  abrir(`<div class="drawer-hd"><div><div class="eyebrow">Nova oportunidade</div>
+    <h1 style="font-size:21px">Cadastrar empresa</h1>
+    <p class="sub">O score é calculado a partir do que você preencher aqui.</p></div>
+    <button class="btn ghost sm" onclick="fechar()">Fechar</button></div>
+  <div class="drawer-bd">
+    <div class="fld"><label>Empresa</label><input id="foEmp" placeholder="Nome da empresa"></div>
+    <div class="fld"><label>Cidade</label><input id="foCid" value="${esc(cid)}"></div>
+    <div class="fld"><label>Cargo da vaga</label><input id="foCargo" value="${esc(c?c.cargo:'')}"></div>
+    <div class="fld"><label>Área</label><select id="foArea">${AREAS.map(a=>`<option${c&&c.area===a?' selected':''}>${a}</option>`).join('')}</select></div>
+    <div class="fld"><label>Que sinal você viu?</label><select id="foSinal">
+      <option value="inauguracao">Inaugurou unidade ou filial</option>
+      <option value="expansao">Anunciou expansão ou crescimento</option>
+      <option value="vaga" selected>Publicou vaga</option>
+      <option value="noticia">Notícia de investimento no setor</option>
+      <option value="sempre">Contrata com frequência</option></select></div>
+    <div class="fld"><label>Resumo do sinal</label><input id="foTexto" value="${esc(pre.texto||'')}" placeholder="Abriu 4 vagas administrativas em 15 dias"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fld"><label>Vagas semelhantes</label><input id="foVagas" type="number" value="1" min="1"></div>
+      <div class="fld"><label>Distância (km)</label><input id="foDist" type="number" value="0" min="0"></div>
+      <div class="fld"><label>Porte</label><select id="foPorte">
+        <option value="pequena">Pequena</option><option value="media" selected>Média</option><option value="grande">Grande</option></select></div>
+      <div class="fld"><label>Há quantos dias</label><input id="foDias" type="number" value="0" min="0"></div>
+    </div>
+    <div class="fld"><label>Onde você viu</label><input id="foFonte" value="${esc(pre.fonte||'')}" placeholder="LinkedIn Jobs, Gupy, jornal local..."></div>
+    <div class="fld"><label>Link (opcional)</label><input id="foLink" value="${esc(pre.link||'')}" placeholder="https://"></div>
+    <div class="fld"><label>Contato (opcional)</label><input id="foContato" placeholder="e-mail, telefone ou nome do RH"></div>
+    <div id="foPrevia" class="out" style="display:none"></div>
+    <button class="btn" id="foSalvar">Salvar oportunidade</button>
+  </div>`);
+  const previa=()=>{
+    const s=scoreComercial({sinal:$('#foSinal').value,vagas:$('#foVagas').value,
+      dist:$('#foDist').value,porte:$('#foPorte').value,dias:$('#foDias').value});
+    const p=$('#foPrevia');p.style.display='block';
+    p.innerHTML=`Score comercial: <b style="font-family:var(--mono)">${s}</b>/100 · chance ${rotTemp(s).toLowerCase()}`;
+  };
+  ['foSinal','foVagas','foDist','foPorte','foDias'].forEach(i=>$('#'+i).addEventListener('input',previa));
+  previa();
+  $('#foSalvar').onclick=()=>salvarOportunidade(c);
+}
+
+async function salvarOportunidade(c){
+  const emp=$('#foEmp').value.trim();
+  if(!emp)return toast('Informe o nome da empresa');
+  const op={id:'m'+Date.now(),empresa:emp,cidade:$('#foCid').value.trim(),
+    dist:Number($('#foDist').value)||0,area:$('#foArea').value,cargo:$('#foCargo').value.trim(),
+    sinal:$('#foTexto').value.trim()||$('#foSinal').selectedOptions[0].text,
+    fonte:$('#foFonte').value.trim()||'cadastro manual',link:$('#foLink').value.trim(),
+    contato:$('#foContato').value.trim(),data:new Date().toISOString().slice(0,10),
+    score:scoreComercial({sinal:$('#foSinal').value,vagas:$('#foVagas').value,
+      dist:$('#foDist').value,porte:$('#foPorte').value,dias:$('#foDias').value})};
+  try{
+    if(sb){await db.inserirOportunidades([op],c);await db.carregar()}
+    else{S.oportunidades=[op,...S.oportunidades]}
+    save();renderTudo();fechar();toast('Oportunidade cadastrada · score '+op.score);
+  }catch(e){toast('Não gravou: '+e.message)}
+}
+
+function abrirOp(id){
+  const o=S.oportunidades.find(x=>x.id===id);if(!o)return;
+  const top=ranking(o,3), c=top.length?top[0].c:null;
+  abrir(`<div class="drawer-hd"><div><div class="eyebrow">Empresa · chance ${rotTemp(o.score).toLowerCase()}</div><h1 style="font-size:21px">${esc(o.empresa)}</h1><p class="sub">${esc(o.cidade)} · ${esc(o.area)}</p></div><button class="btn ghost sm" onclick="fechar()">Fechar</button></div>
+  <div class="drawer-bd">
+    <div class="op why" style="border-left:3px solid ${corTemp(o.score)}">${esc(o.sinal)}</div>
+    <dl class="kv"><dt>Score comercial</dt><dd><b style="font-family:var(--mono)">${o.score}</b>/100</dd>
+    <dt>${temVaga(o)?'Vaga publicada':'Perfil provável'}</dt><dd><b>${esc(o.cargo)||'não informado'}</b></dd><dt>Distância</dt><dd>${o.dist?o.dist+' km':'mesma cidade'}</dd>
+    <dt>Fonte</dt><dd>${esc(o.fonte)}${o.link?` · <a href="${esc(o.link)}" target="_blank" rel="noopener">abrir</a>`:''}</dd>
+    <dt>Registrado</dt><dd>${o.data.split('-').reverse().join('/')}</dd>
+    <dt>Contato</dt><dd>${esc(o.contato)||'a levantar'}</dd></dl>
+
+    <div class="eyebrow" style="margin-top:20px">Candidatos mais aderentes</div>
+    ${top.length?`<div class="feed" style="border:1px solid var(--line);border-radius:var(--r-sm);max-height:none">
+      ${top.map(t=>`<div class="feed-i" data-c="${t.c.id}"><div class="r1"><b>${esc(t.c.nome)}</b><span class="score ${clsScore(t.a)}">${t.a}%</span></div>
+      <div class="m">${esc(t.c.cargo)} · ${esc(t.c.cidade)} · ${esc(t.c.aval)}</div></div>`).join('')}</div>`
+      :'<p style="font-size:13px;color:var(--txt-2)">Nenhum candidato da base atinge 40% de aderência para esta vaga.</p>'}
+
+    <div class="eyebrow" style="margin-top:22px">Abordagem pronta</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn sm" data-g="email">E-mail</button>
+      <button class="btn sm ghost" data-g="whats">WhatsApp</button>
+      <button class="btn sm ghost" data-g="ligacao">Roteiro de ligação</button></div>
+    <div id="dOut"></div></div>`);
+  $$('#drawerBox button[data-g]').forEach(b=>b.onclick=()=>abordagem(o,c,b.dataset.g));
+  $$('#drawerBox .feed-i[data-c]').forEach(e=>e.onclick=()=>abrirCand(e.dataset.c));
+}
+
+/* ---------- abordagem a partir de modelo, sem IA ---------- */
+function abordagem(o,c,tipo){
+  const texto=preencher((cfg.tpl&&cfg.tpl[tipo])||TPL[tipo],o,c);
+  db.registrar(o.id,tipo==='whats'?'whatsapp':tipo,texto);
+  $('#dOut').innerHTML='<div class="out" id="dTxt">'+esc(texto)+'</div>'+
+    '<div style="display:flex;gap:7px;margin-top:8px;flex-wrap:wrap">'+
+    '<button class="btn sm ghost" id="dCopy">Copiar</button>'+
+    (tipo==='whats'&&o.contato?`<a class="btn sm ghost" target="_blank" rel="noopener" href="https://wa.me/55${o.contato.replace(/\D/g,'')}?text=${encodeURIComponent(texto)}">Abrir no WhatsApp</a>`:'')+
+    (temIA()?'<button class="btn sm ghost" id="dRefinar">Refinar com IA</button>':'')+
+    '<button class="btn sm ghost" onclick="ir(\'cfg\')">Editar modelo</button></div>';
+  $('#dCopy').onclick=()=>{navigator.clipboard.writeText($('#dTxt').innerText);toast('Copiado')};
+  if(temIA())$('#dRefinar').onclick=e=>refinarComIA(o,c,tipo,texto,e.target);
+}
+
+/* =========================================================
+   IA — chamadas
+   ========================================================= */
+async function autorizacao(){
+  if(sb){const {data}=await sb.auth.getSession();if(data?.session)return {Authorization:'Bearer '+data.session.access_token}}
+  if(cfg.sbKey)return {Authorization:'Bearer '+cfg.sbKey};
+  return {};
+}
+/* ---------------------------------------------------------------
+   ia() — ponto único de chamada. Pelo proxy, o provedor é trocado
+   sem mexer em nada aqui. Sem proxy, só Anthropic e OpenAI diretos.
+   --------------------------------------------------------------- */
+async function ia({system,prompt,busca=false,max=2000}){
+  if(cfg.proxy){
+    const r=await fetch(cfg.proxy.replace(/\/$/,'')+'/ia',{method:'POST',
+      headers:{'Content-Type':'application/json',...await autorizacao()},
+      body:JSON.stringify({system,prompt,busca,max,provedor:cfg.provedor||undefined,modelo:cfg.model||undefined})});
+    const j=await r.json();
+    if(!r.ok||j.erro)throw new Error(j.detalhe||j.erro||('HTTP '+r.status));
+    if(j.aviso)toast(j.aviso);
+    return j.texto||'';
+  }
+  if(!cfg.key)throw new Error('Configure a chave da IA ou o endereço do proxy em Configurar.');
+  const prov=cfg.provedor||'anthropic';
+  if(prov==='anthropic'){
+    const d=await claude({model:cfg.model||'claude-sonnet-5-5',max_tokens:max,system,
+      messages:[{role:'user',content:prompt}],
+      ...(busca?{tools:[{type:'web_search_20250305',name:'web_search',max_uses:8}]}:{})});
+    return txtDe(d);
+  }
+  if(prov==='openai'){
+    const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+cfg.key},
+      body:JSON.stringify({model:cfg.model||'gpt-5',instructions:system,input:prompt,
+        max_output_tokens:max,...(busca?{tools:[{type:'web_search'}]}:{})})});
+    if(!r.ok)throw new Error('OpenAI respondeu '+r.status+'. '+(await r.text()).slice(0,180));
+    const d=await r.json();
+    if(d.output_text)return d.output_text;
+    return (d.output||[]).flatMap(i=>(i.content||[]).filter(c=>c.type==='output_text').map(c=>c.text)).join('\n');
+  }
+  throw new Error('Sem proxy, só Anthropic e OpenAI funcionam direto. Configure o endereço do proxy para usar '+prov+'.');
+}
+
+async function claude(body){
+  if(cfg.proxy) {
+    const r=await fetch(cfg.proxy.replace(/\/$/,'')+'/claude',{method:'POST',
+      headers:{'Content-Type':'application/json',...await autorizacao()},body:JSON.stringify(body)});
+    if(!r.ok) throw new Error('Proxy respondeu '+r.status);
+    return r.json();
+  }
+  if(!cfg.key) throw new Error('Configure a chave da API ou o endereço do proxy em Configurar.');
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
+    'Content-Type':'application/json','x-api-key':cfg.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'
+  },body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('A API respondeu '+r.status+'. '+(await r.text()).slice(0,180));
+  return r.json();
+}
+const txtDe=d=>(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+function jsonDe(t){const m=t.match(/\[[\s\S]*\]|\{[\s\S]*\}/);if(!m)throw new Error('A IA não devolveu JSON.');return JSON.parse(m[0])}
+
+async function buscarOportunidades(c){
+  const btn=$('#dBuscar'), out=$('#dOut');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Pesquisando na web…';
+  out.innerHTML='<div class="out">Procurando vagas e sinais de crescimento em fontes públicas. Isso leva de 30 a 60 segundos.</div>';
+  try{
+    const bruto=await ia({busca:true,max:3000,
+      system:`Você é analista de inteligência comercial de uma consultoria de RH no Espírito Santo, Brasil. Pesquise na web empresas que provavelmente contratariam o perfil informado. Priorize vagas publicadas nos últimos 45 dias, inaugurações, expansões e notícias de crescimento. Considere a cidade do candidato e um raio de até 100 km, além de vagas remotas ou híbridas. Responda SOMENTE com um array JSON, sem texto ao redor, no formato:
+[{"empresa":"","cidade":"","dist_km":0,"area":"uma de: ${AREAS.join(' | ')}","cargo":"","sinal":"frase curta com o motivo concreto","fonte":"onde encontrou","link":"url","data":"AAAA-MM-DD","contato":"e-mail, telefone ou perfil se aparecer","score":0}]
+O score vai de 0 a 100 e considera: número de vagas semelhantes, proximidade, porte, sinais de crescimento e tempo da vaga. Máximo de 8 resultados.`,
+      prompt:`Candidato: ${c.nome}
+Cargo desejado: ${c.cargo}
+Última área: ${c.area}
+Cidade: ${c.cidade}
+Escolaridade: ${c.escolaridade}
+Pretensão salarial: R$ ${c.pretensao}
+Avaliação interna: ${c.aval}
+
+Encontre empresas que possam contratar este perfil agora.`});
+    const novos=jsonDe(bruto).map((o,i)=>({
+      id:'a'+Date.now()+i,empresa:o.empresa,cidade:o.cidade||'',dist:Number(o.dist_km)||0,
+      area:AREAS.includes(o.area)?o.area:c.area,cargo:o.cargo||c.cargo,sinal:o.sinal||'',
+      fonte:o.fonte||'web',link:o.link||'',contato:o.contato||'',
+      data:(o.data||new Date().toISOString()).slice(0,10),score:Math.max(0,Math.min(100,Number(o.score)||50))}));
+    const jaTem=new Set(S.oportunidades.map(x=>(x.empresa+x.cargo).toLowerCase()));
+    const add=novos.filter(x=>!jaTem.has((x.empresa+x.cargo).toLowerCase()));
+    if(sb&&add.length){await db.inserirOportunidades(add,c);await db.carregar()}
+    else{S.oportunidades=[...add,...S.oportunidades]}
+    db.logVarredura(c,novos.length,add.length,null);contar('varreduras');save();renderTudo();
+    out.innerHTML=`<div class="out"><b>${add.length} empresa(s) nova(s) no radar.</b>\n\n`+add.map(x=>`• ${x.empresa} — ${x.cidade} · score ${x.score}\n  ${x.sinal}`).join('\n\n')+`</div>`;
+    toast(add.length+' oportunidade(s) encontrada(s)');
+  }catch(e){db.logVarredura(c,0,0,e.message);out.innerHTML='<div class="out" style="background:#FFEEE7;color:#8C2A08">Não foi possível concluir a busca. '+esc(e.message)+'</div>'}
+  btn.disabled=false;btn.textContent='Procurar empresas para este perfil';
+}
+
+async function refinarComIA(o,c,tipo,base,btn){
+  const antes=btn.textContent;btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
+  try{
+    const t=await ia({max:900,
+      system:'Você revisa textos comerciais da Evolue Treinamento e Desenvolvimento, consultoria de RH em Linhares/ES. Tom profissional, direto, em português do Brasil. Sem superlativos vazios, sem emoji. Devolva apenas o texto revisado.',
+      prompt:`Ajuste este texto para a empresa ${o.empresa} (${o.cidade}), considerando o sinal: ${o.sinal}. Não invente dados.\n\n${base}`});
+    contar('textos');db.registrar(o.id,tipo==='whats'?'whatsapp':tipo,t);
+    $('#dTxt').textContent=t;
+  }catch(e){toast('Falha ao refinar: '+e.message)}
+  btn.disabled=false;btn.textContent=antes;
+}
+
+async function perguntar(q){
+  const chat=$('#chat');
+  chat.insertAdjacentHTML('beforeend','<div class="msg u">'+esc(q)+'</div>');
+  chat.insertAdjacentHTML('beforeend','<div class="msg a" id="pend">Analisando a base…</div>');
+  chat.scrollTop=chat.scrollHeight;
+  try{
+    const ctx={cidade_base:cfg.cidade,
+      candidatos:S.candidatos.map(c=>({nome:c.nome,cargo:c.cargo,cidade:c.cidade,area:c.area,avaliacao:c.aval,dias_parado:c.parado,empregabilidade:c.emp,pretensao:c.pretensao})),
+      oportunidades:S.oportunidades.map(o=>({empresa:o.empresa,cidade:o.cidade,area:o.area,cargo:o.cargo,score:o.score,sinal:o.sinal,fase:S.leads[o.id]||'não prospectada'}))};
+    const t=await ia({max:1200,
+      system:'Você é o analista de dados da Evolue. Responda em português do Brasil, direto, citando nomes e números concretos dos dados fornecidos. Se o dado não existir na base, diga isso em vez de estimar. Sem listas longas quando duas frases resolvem.',
+      prompt:'Base atual em JSON:\n'+JSON.stringify(ctx)+'\n\nPergunta: '+q});
+    $('#pend').textContent=t;$('#pend').id='';
+  }catch(e){$('#pend').textContent='Não consegui responder. '+e.message;$('#pend').id=''}
+  chat.scrollTop=chat.scrollHeight;
+}
+
+/* =========================================================
+   MONITOR — RSS via Edge Function, sem chave e sem custo
+   ========================================================= */
+let MON=[];
+const chave=l=>String(l).slice(0,220);
+
+/* uma linha que começa com http é feed direto; o resto vira busca no Google Notícias */
+function separarFontes(lista){
+  const buscas=[],urls=[];
+  lista.forEach(b=>{
+    if(/^https?:\/\//i.test(b.q))urls.push({nome:b.nome,url:b.q});
+    else buscas.push(b);
+  });
+  return {buscas,urls,max:12};
+}
+
+async function atualizarMonitor(){
+  const b=$('#monGo'),st=$('#monStatus');
+  if(!cfg.proxy){ir('cfg');return toast('Configure o endereço do proxy — o monitor roda por ele')}
+  b.disabled=true;b.innerHTML='<span class="spin"></span> Buscando…';
+  const f=separarFontes(cfg.buscas||BUSCAS_PADRAO);
+  st.style.display='block';
+  st.textContent=`Consultando ${f.buscas.length} busca(s) de notícia e ${f.urls.length} feed(s) direto(s). Leva alguns segundos.`;
+  try{
+    const r=await fetch(cfg.proxy.replace(/\/$/,'')+'/feeds',{method:'POST',
+      headers:{'Content-Type':'application/json',...await autorizacao()},
+      body:JSON.stringify(separarFontes(cfg.buscas||BUSCAS_PADRAO))});
+    const j=await r.json();
+    if(!r.ok||j.erro)throw new Error(j.detalhe||j.erro||('HTTP '+r.status));
+    MON=j.resultados||[];
+    st.textContent=`${j.total} resultados em ${MON.length} buscas · atualizado agora`;
+    renderMonitor();
+  }catch(e){st.textContent='Falha: '+e.message}
+  b.disabled=false;b.textContent='Atualizar agora';
+}
+
+function renderMonitor(){
+  const out=$('#monOut');
+  if(!MON.length){out.innerHTML='<div class="card empty"><b>Nada buscado ainda</b>Clique em “Atualizar agora”. As buscas são editáveis na aba Configurar.</div>';return}
+  const jaTem=new Set(S.oportunidades.map(o=>(o.link||'').slice(0,220)).filter(Boolean));
+  const vistos=new Set(S.dispensados||[]);
+  let html='',vazio=true;
+  MON.forEach(g=>{
+    const itens=(g.itens||[]).filter(i=>!vistos.has(chave(i.link))&&!jaTem.has(chave(i.link)));
+    if(g.erro){html+=`<div class="mon-g"><h3>${esc(g.busca)} <span>falhou: ${esc(g.erro)}</span></h3></div>`;return}
+    if(!itens.length)return;
+    vazio=false;
+    html+=`<div class="mon-g"><h3>${esc(g.busca)} <span>${itens.length} novo(s)</span></h3>`+
+      itens.map(i=>`<div class="mon-i" data-k="${esc(chave(i.link))}">
+        <div class="tx"><a href="${esc(i.link)}" target="_blank" rel="noopener">${esc(i.titulo)}</a>
+        <div class="meta">${esc(i.fonte)}${i.data?' · '+i.data.split('-').reverse().join('/'):''}</div></div>
+        <div class="bt"><button class="btn sm" data-add='${esc(JSON.stringify(i))}'>Virar oportunidade</button>
+        <button class="btn sm ghost" data-skip="1">Dispensar</button></div></div>`).join('')+'</div>';
+  });
+  out.innerHTML=vazio?'<div class="card empty"><b>Tudo revisado</b>Nenhum resultado novo desde a última passagem.</div>':html;
+  $$('#monOut [data-add]').forEach(btn=>btn.onclick=()=>{
+    const i=JSON.parse(btn.dataset.add);
+    formOportunidade(null,{texto:i.titulo,fonte:i.fonte,link:i.link,data:i.data});
+  });
+  $$('#monOut [data-skip]').forEach(btn=>btn.onclick=()=>{
+    const k=btn.closest('.mon-i').dataset.k;
+    S.dispensados=[...new Set([...(S.dispensados||[]),k])].slice(-600);
+    save();renderMonitor();
+  });
+}
+
+/* ---- IA lendo as manchetes do Monitor: o uso mais barato do sistema ---- */
+async function analisarManchetes(){
+  const b=$('#monIA'),st=$('#monStatus');
+  const vistos=new Set(S.dispensados||[]);
+  const jaTem=new Set(S.oportunidades.map(o=>chave(o.link||'')).filter(Boolean));
+  const itens=[];
+  MON.forEach(g=>(g.itens||[]).forEach(i=>{
+    if(!vistos.has(chave(i.link))&&!jaTem.has(chave(i.link))&&itens.length<45)
+      itens.push({t:i.titulo,f:i.fonte,d:i.data,l:i.link});
+  }));
+  if(!itens.length)return toast('Nenhuma manchete nova para analisar');
+  b.disabled=true;b.innerHTML='<span class="spin"></span> Lendo '+itens.length+' manchetes…';
+  st.style.display='block';st.textContent='A IA está separando o que é sinal de contratação do que é ruído.';
+  try{
+    const bruto=await ia({max:4000,
+      system:`Você é analista de inteligência comercial de uma consultoria de RH em ${cfg.cidade}, no norte do Espírito Santo.
+Recebe manchetes coletadas por RSS e separa as que indicam que uma EMPRESA ESPECÍFICA vai contratar: inauguração, nova unidade, expansão, investimento, anúncio de vagas.
+Descarte política, polícia, esporte, texto genérico sem empresa nomeada e qualquer coisa que não dê para abordar comercialmente.
+Não invente nada que não esteja na manchete. Se a manchete não nomear a empresa, descarte.
+Responda SOMENTE com um array JSON, sem texto ao redor:
+[{"empresa":"","cidade":"","dist_km":0,"area":"uma de: ${AREAS.join(' | ')}","cargo":"cargo provável","sinal":"frase curta com o motivo, tirada da manchete","tipo":"inauguracao|expansao|vaga|noticia","porte":"pequena|media|grande","link":"o link original","data":"AAAA-MM-DD"}]
+dist_km é a distância aproximada até ${cfg.cidade}. Array vazio se nada servir.`,
+      prompt:JSON.stringify(itens)});
+    const achados=jsonDe(bruto);
+    contar('analises');
+    if(!achados.length){st.textContent='A IA não encontrou sinal comercial nessas manchetes.';b.disabled=false;b.textContent='Analisar com IA';return}
+    const novos=achados.map((o,i)=>({id:'ia'+Date.now()+i,empresa:o.empresa,cidade:o.cidade||'',
+      dist:Number(o.dist_km)||0,area:AREAS.includes(o.area)?o.area:'Administrativo',
+      cargo:o.cargo||'',sinal:o.sinal||'',fonte:'Monitor + IA',link:o.link||'',contato:'',
+      data:(o.data||new Date().toISOString()).slice(0,10),
+      score:scoreComercial({sinal:o.tipo,vagas:1,dist:o.dist_km,porte:o.porte,dias:0})}));
+    const tem=new Set(S.oportunidades.map(x=>(x.empresa+x.cargo).toLowerCase()));
+    const add=novos.filter(x=>!tem.has((x.empresa+x.cargo).toLowerCase()));
+    if(sb&&add.length){await db.inserirOportunidades(add,null);await db.carregar()}
+    else S.oportunidades=[...add,...S.oportunidades];
+    S.dispensados=[...new Set([...(S.dispensados||[]),...itens.map(i=>chave(i.l))])].slice(-800);
+    save();renderTudo();
+    st.textContent=`${add.length} oportunidade(s) criada(s) de ${itens.length} manchetes. As demais foram marcadas como revisadas.`;
+    toast(add.length+' oportunidade(s) criada(s)');
+  }catch(e){st.textContent='Falha na análise: '+e.message}
+  b.disabled=false;b.textContent='Analisar com IA';
+}
+
+/* =========================================================
+   IMPORTAÇÃO DO CSV EXPORTADO DO QUICKIN
+   ========================================================= */
+function lerCSV(txt){
+  const d=txt.charCodeAt(0)===0xFEFF?txt.slice(1):txt;
+  const linhas=[];let campo='',linha=[],aspas=false;
+  for(let i=0;i<d.length;i++){
+    const ch=d[i];
+    if(aspas){ if(ch==='"'){ if(d[i+1]==='"'){campo+='"';i++} else aspas=false } else campo+=ch }
+    else if(ch==='"')aspas=true;
+    else if(ch===';'){linha.push(campo);campo=''}
+    else if(ch==='\n'){linha.push(campo);linhas.push(linha);linha=[];campo=''}
+    else if(ch!=='\r')campo+=ch;
+  }
+  if(campo||linha.length){linha.push(campo);linhas.push(linha)}
+  const cab=linhas.shift().map(c=>c.trim().toLowerCase());
+  return linhas.filter(l=>l.length>1).map(l=>{const o={};cab.forEach((c,i)=>o[c]=(l[i]||'').trim());return o});
+}
+
+/* o id do Quickin é um ObjectId: os 8 primeiros dígitos são a data de cadastro */
+function dataDoId(id){
+  const s=String(id).slice(0,8);
+  if(!/^[0-9a-f]{8}$/i.test(s))return null;
+  return new Date(parseInt(s,16)*1000);
+}
+
+const TAGS={'perfil ótimo':'Excelente','perfil otimo':'Excelente','perfil bom':'Muito Bom','perfil médio':'Bom','perfil medio':'Bom'};
+function avaliar(tags){
+  const t=(tags||'').toLowerCase();
+  if(/péssimo|pessimo/.test(t))return 'Descartado';
+  if(/restrição|restricao/.test(t))return 'Restrição';
+  for(const k in TAGS)if(t.includes(k))return TAGS[k];
+  return 'Sem avaliação';
+}
+const UF_MAP={'espírito santo':'ES','espirito santo':'ES','minas gerais':'MG','são paulo':'SP','sao paulo':'SP','rio de janeiro':'RJ','bahia':'BA'};
+function normUf(r){const s=(r||'').trim();if(s.length===2)return s.toUpperCase();return UF_MAP[s.toLowerCase()]||s.toUpperCase().slice(0,2)}
+
+function mapearCSV(r){
+  const cargo=(r.headline||'').trim()||'Não informado';
+  const d=dataDoId(r.id);
+  const dias=d?Math.max(0,Math.round((Date.now()-d)/86400000)):999;
+  const cidade=(r.city||'').trim().toLowerCase().replace(/(^|[\s'-])([a-zà-ú])/g,(m,a,b)=>a+b.toUpperCase())
+    .replace(/\b(De|Da|Do|Dos|Das)\b/g,x=>x.toLowerCase());
+  const uf=normUf(r.region);
+  const aval=avaliar(r.tags);
+  return {id:r.id,nome:(r.name||'').trim(),cargo,
+    cidade:cidade?cidade+(uf?' - '+uf:''):'Não informada',
+    area:areaDoCargo(cargo),aval,parado:dias,
+    escolaridade:'Não informado',
+    pretensao:Number(String(r.salary).replace(/[^\d]/g,''))||0,
+    email:(r.email||'').trim(),fone:(r.phones||'').split(';')[0].trim(),
+    canal:(r.source||'').trim(),trabalhando:/trabalhando/i.test(r.tags||''),
+    cadastro:d?d.toISOString().slice(0,10):'',origem:'csv'};
+}
+function areaDoCargo(c){const t=(c||'').toLowerCase();
+  if(/vend|comerc|repres|consultor|atendimento|caixa|balcon|loja/.test(t))return'Comercial';
+  if(/produ|operad|encarreg|manuten|industr|mecân|elétr|solda|frentista|ajudante|montador|pintor/.test(t))return'Produção';
+  if(/financ|contáb|contab|fiscal|tesour|cobran|crédito|credito/.test(t))return'Financeiro';
+  if(/logíst|logist|estoq|expedi|motoris|almox|entrega|conferent/.test(t))return'Logística';
+  if(/seguran|sst|tst|bombeir|ambient/.test(t))return'Segurança do Trabalho';
+  if(/sistem|desenvolv|\bti\b|infra|dados|suporte téc|program/.test(t))return'Tecnologia';
+  if(/enfermag|saúde|médic|farmac|dentist|nutri/.test(t))return'Saúde';
+  return'Administrativo'}
+
+/* empregabilidade adaptada: o CSV não traz escolaridade nem histórico de processos */
+function empCSV(c){
+  const av={'Excelente':40,'Muito Bom':32,'Bom':22,'Sem avaliação':14}[c.aval]||10;
+  const rec=c.parado<=60?20:c.parado<=180?15:c.parado<=365?9:3;
+  const mercado={'Administrativo':18,'Comercial':20,'Produção':17,'Logística':16,'Financeiro':14,'Segurança do Trabalho':15,'Tecnologia':13,'Saúde':14}[c.area]||12;
+  const completo=(c.cargo!=='Não informado'?5:0)+(c.fone?4:0)+(c.cidade!=='Não informada'?4:0)+(c.pretensao?3:0);
+  const passivo=c.trabalhando?-8:0;
+  return Math.max(5,Math.min(100,Math.round(av+rec+mercado+completo+passivo)));
+}
+
+let CSV_CACHE=null;
+$('#btnImport').onclick=()=>$('#csvFile').click();
+$('#csvFile').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  toast('Lendo '+f.name+'…');
+  try{
+    const linhas=lerCSV(await f.text());
+    if(!linhas.length||!('id' in linhas[0]))throw new Error('Não reconheci as colunas. Exporte pelo Quickin sem alterar o cabeçalho.');
+    CSV_CACHE=linhas.map(mapearCSV).filter(c=>c.nome);
+    CSV_CACHE.forEach(c=>c.emp=empCSV(c));
+    telaImport();
+  }catch(err){toast('Erro ao ler o arquivo: '+err.message)}
+  e.target.value='';
+};
+
+function telaImport(){
+  const L=CSV_CACHE;
+  const qual=L.filter(c=>['Excelente','Muito Bom','Bom'].includes(c.aval));
+  const rec=L.filter(c=>c.aval==='Sem avaliação'&&c.parado<=183&&c.cargo!=='Não informado'&&c.fone&&c.cidade!=='Não informada');
+  const recES=rec.filter(c=>/ - ES$/.test(c.cidade));
+  const fora=L.filter(c=>c.aval==='Descartado'||c.aval==='Restrição');
+  const box=(id,t,n,s,mk)=>`<label style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:9px;cursor:pointer">
+    <input type="checkbox" id="${id}" ${mk?'checked':''} style="margin-top:3px">
+    <div><b style="font-size:13.5px">${t}</b> <span class="score">${n}</span><div style="font-size:12.5px;color:var(--txt-2);margin-top:3px">${s}</div></div></label>`;
+  abrir(`<div class="drawer-hd"><div><div class="eyebrow">Importação</div><h1 style="font-size:21px">${L.length} candidatos lidos</h1>
+    <p class="sub">Escolha o que entra na base do Radar.</p></div><button class="btn ghost sm" onclick="fechar()">Fechar</button></div>
+  <div class="drawer-bd">
+    ${box('iQual','Avaliados pela equipe',qual.length,'Tags Perfil Ótimo, Bom ou Médio. É a informação de qualidade mais confiável que o export traz.',true)}
+    ${box('iRecES','Recentes do Espírito Santo',recES.length,'Cadastro nos últimos 6 meses, com cargo, telefone e cidade preenchidos, dentro do estado.',true)}
+    ${box('iRecFora','Recentes de fora do estado',rec.length-recES.length,'Mesmos critérios, mas fora do ES. Úteis só para vagas remotas.',false)}
+    <p style="font-size:12.5px;color:var(--txt-2);margin:14px 0 6px"><b>${fora.length}</b> ficam de fora em qualquer caso: marcados como Perfil Péssimo ou Restrição.</p>
+    <div id="iOut" class="out" style="display:none"></div>
+    <button class="btn" id="iGo" style="margin-top:8px">Importar selecionados</button>
+  </div>`);
+  $('#iGo').onclick=async()=>{
+    let sel=[];
+    if($('#iQual').checked)sel=sel.concat(qual);
+    if($('#iRecES').checked)sel=sel.concat(recES);
+    if($('#iRecFora').checked)sel=sel.concat(rec.filter(c=>!/ - ES$/.test(c.cidade)));
+    if(!sel.length)return toast('Marque ao menos um grupo');
+    const b=$('#iGo');b.disabled=true;b.innerHTML='<span class="spin"></span> Importando…';
+    try{
+      if(sb){
+        for(let i=0;i<sel.length;i+=400){
+          const lote=sel.slice(i,i+400).map(c=>{const [ci,uf]=cidUf(c.cidade);
+            return {id:c.id,nome:c.nome,cargo:c.cargo,cidade:ci,uf,area:c.area,avaliacao:c.aval,
+              dias_parado:c.parado,escolaridade:c.escolaridade,pretensao:c.pretensao||null,
+              empregabilidade:c.emp,email:c.email||null,telefone:c.fone||null,
+              sincronizado_em:new Date().toISOString()}});
+          const {error}=await sb.from('candidatos').upsert(lote,{onConflict:'id'});
+          if(error)throw error;
+          b.innerHTML=`<span class="spin"></span> ${Math.min(i+400,sel.length)}/${sel.length}`;
+        }
+        await db.carregar();
+      }else{
+        S.candidatos=sel;S.demo=false;
+      }
+      save();renderTudo();fechar();
+      toast(sel.length+' candidatos importados');
+    }catch(e){$('#iOut').style.display='block';$('#iOut').textContent='Falha: '+e.message;b.disabled=false;b.textContent='Importar selecionados'}
+  };
+}
+
+/* =========================================================
+   QUICKIN
+   ========================================================= */
+async function sincronizarQuickin(){
+  const b=$('#btnSync');
+  if(!cfg.proxy){ir('cfg');return toast('Configure o endereço do proxy primeiro')}
+  b.disabled=true;b.innerHTML='<span class="spin"></span> Sincronizando…';
+  try{
+    const r=await fetch(cfg.proxy.replace(/\/$/,'')+'/sync',{method:'POST',
+      headers:{'Content-Type':'application/json',...await autorizacao()},body:JSON.stringify({})});
+    const j=await r.json();
+    if(!r.ok||j.erro)throw new Error(j.detalhe||j.erro||('HTTP '+r.status));
+    if(sb)await db.carregar();
+    renderTudo();marcarSync();
+    toast(j.gravados+' candidatos sincronizados'+(j.truncado?' (truncado, rode de novo)':''));
+  }catch(e){toast('Falha na sincronização: '+e.message)}
+  b.disabled=false;b.textContent='Sincronizar com o Quickin';
+}
+function marcarSync(){$('#syncDot').className='dot live';$('#syncTxt').textContent='Quickin · '+S.candidatos.length+' candidatos'}
+
+/* =========================================================
+   VARREDURA EM LOTE
+   ========================================================= */
+async function varrer(){
+  const alvos=[...S.candidatos].filter(c=>c.aval==='Excelente'||c.aval==='Muito Bom').sort((a,b)=>b.emp-a.emp).slice(0,3);
+  if(!alvos.length)return toast('Nenhum candidato excelente na base');
+  const b=$('#btnVarrer');b.disabled=true;
+  let n=0;
+  for(const c of alvos){
+    b.innerHTML=`<span class="spin"></span> ${c.nome.split(' ')[0]} (${++n}/${alvos.length})`;
+    abrirCand(c.id);
+    await buscarOportunidades(c);
+  }
+  fechar();b.disabled=false;b.textContent='Varrer a base agora';
+}
+
+/* =========================================================
+   UI
+   ========================================================= */
+function ir(v){$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));window.scrollTo(0,0)}
+$$('#tabs button').forEach(b=>b.onclick=()=>ir(b.dataset.v));
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2600)}
+$$('#scopeCtl button').forEach(b=>b.onclick=()=>{$$('#scopeCtl button').forEach(x=>x.classList.remove('on'));b.classList.add('on');S.raio=+b.dataset.raio;renderRadar()});
+['#fBusca','#fAval','#fCidade','#fOrd'].forEach(s=>$(s).addEventListener('input',renderCand));
+$('#fOpOrd').onchange=renderOps;
+['#fOpBusca','#fOpArea','#fOpTipo','#fOpMatch'].forEach(s=>$(s).addEventListener('input',renderOps));
+$('#btnSync').onclick=sincronizarQuickin;
+$('#btnVarrer').onclick=varrer;
+$('#btnNova').onclick=()=>formOportunidade(null);
+$('#monGo').onclick=atualizarMonitor;
+$('#monIA').onclick=analisarManchetes;
+$('#cReseed').onclick=()=>{semear();renderTudo();ir('radar');toast(S.oportunidades.length+' oportunidades carregadas')};
+$('#bSalvar').onclick=()=>{
+  const l=$('#tBuscas').value.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>{
+    const [n,...r]=x.split('|');return {nome:(n||'').trim(),q:r.join('|').trim()}}).filter(b=>b.q);
+  if(!l.length)return toast('Nenhuma busca válida');
+  cfg.buscas=l.slice(0,12);save();
+  const f=separarFontes(cfg.buscas);
+  toast(`${f.buscas.length} busca(s) e ${f.urls.length} feed(s) salvos`);
+};
+$('#bReset').onclick=()=>{cfg.buscas=null;save();$('#tBuscas').value=BUSCAS_PADRAO.map(b=>b.nome+' | '+b.q).join('\n');toast('Buscas restauradas')};
+$('#tSalvar').onclick=()=>{cfg.tpl={email:$('#tEmail').value,whats:$('#tWhats').value,ligacao:$('#tLigacao').value};save();toast('Modelos salvos')};
+$('#tReset').onclick=()=>{cfg.tpl=null;save();$('#tEmail').value=TPL.email;$('#tWhats').value=TPL.whats;$('#tLigacao').value=TPL.ligacao;toast('Modelos restaurados')};
+$('#iaGo').onclick=()=>{const v=$('#iaIn').value.trim();if(v){$('#iaIn').value='';perguntar(v)}};
+$('#iaIn').onkeydown=e=>{if(e.key==='Enter')$('#iaGo').click()};
+$$('.chips button').forEach(b=>b.onclick=()=>perguntar(b.textContent));
+$('#cSave').onclick=()=>{
+  const antes=cfg.sbUrl+cfg.sbKey;
+  cfg={...cfg,sbUrl:$('#cSbUrl').value.trim(),sbKey:$('#cSbKey').value.trim(),
+       qAcc:$('#cQAcc').value.trim(),qTok:$('#cQTok').value.trim(),proxy:$('#cProxy').value.trim(),
+       key:$('#cKey').value.trim(),provedor:$('#cProvedor').value,model:$('#cModel').value.trim(),
+       cidade:$('#cCidade').value.trim()||'Linhares - ES',
+       consultor:$('#cConsultor').value.trim(),contato:$('#cContato').value.trim()};
+  save();renderConsultas();
+  if(cfg.sbUrl+cfg.sbKey!==antes){toast('Reconectando ao banco…');setTimeout(()=>location.reload(),700);return}
+  $('#btnVarrer').hidden=!temIA();$('#monIA').hidden=!temIA();
+  renderRadar();renderUso();toast('Configurações salvas');
+};
+$('#cProvedor').onchange=()=>{
+  const p=$('#cProvedor').value;
+  $('#cModel').placeholder=MODELOS[p];
+  $('#cModelDica').textContent=SEM_BUSCA.has(p)
+    ? 'Este provedor não faz busca na web nesta integração: a varredura de candidatos responde sem pesquisar. O Monitor e os textos funcionam normalmente.'
+    : 'Deixe vazio para usar o padrão do provedor.';
+};
+$('#cSair').onclick=async()=>{if(sb)await sb.auth.signOut();localStorage.removeItem(LS+'.sessao');location.reload()};
+$('#cTest').onclick=async()=>{const o=$('#cOut');o.style.display='block';o.textContent='Testando…';
+  try{const t=await ia({system:'Responda em português, de forma mínima.',prompt:'Responda apenas: conexão ok.',max:60});
+    o.textContent='✓ '+t+'  ('+(cfg.provedor||'anthropic')+')'}
+  catch(e){o.textContent='✕ '+e.message}};
+
+const PROXY_CODE=`# 1. Banco
+#    Supabase > SQL Editor > cole supabase/schema.sql e rode.
+#    Authentication > Users > crie um usuário para cada consultor.
+
+# 2. Função (na sua máquina, dentro do repositório)
+npm i -g supabase
+supabase login
+supabase link --project-ref SEU_PROJECT_REF
+
+supabase secrets set \\
+  ANTHROPIC_KEY=sk-ant-xxx \\
+  QUICKIN_TOKEN=xxx \\
+  QUICKIN_ACCOUNT=xxx \\
+  ORIGENS_PERMITIDAS=https://SEU-USUARIO.github.io
+
+supabase functions deploy radar-proxy --no-verify-jwt
+
+# 3. Conferir
+curl https://SEU_PROJECT_REF.supabase.co/functions/v1/radar-proxy/health
+# deve responder: {"ok":true,"anthropic":true,"quickin":true,...}
+
+# 4. Voltar aqui e preencher:
+#    URL do projeto, chave anon e o endereço do proxy:
+#    https://SEU_PROJECT_REF.supabase.co/functions/v1/radar-proxy
+
+# 5. Sincronização automática (opcional)
+#    cron-job.org, POST diário para .../radar-proxy/sync
+#    Isso também mantém o projeto Supabase fora da pausa por inatividade.`;
+
+/* =========================================================
+   LOGIN E INICIALIZAÇÃO
+   ========================================================= */
+function preencherCfg(){
+  $('#cSbUrl').value=cfg.sbUrl;$('#cSbKey').value=cfg.sbKey;
+  $('#cQAcc').value=cfg.qAcc;$('#cQTok').value=cfg.qTok;$('#cProxy').value=cfg.proxy;
+  $('#cKey').value=cfg.key;$('#cProvedor').value=cfg.provedor||'anthropic';
+  $('#cModel').value=cfg.model;$('#cModel').placeholder=MODELOS[cfg.provedor||'anthropic'];
+  $('#cCidade').value=cfg.cidade;
+  $('#cConsultor').value=cfg.consultor;$('#cContato').value=cfg.contato;
+  $('#tBuscas').value=(cfg.buscas||BUSCAS_PADRAO).map(b=>b.nome+' | '+b.q).join('\n');
+  const t=cfg.tpl||TPL;
+  $('#tEmail').value=t.email;$('#tWhats').value=t.whats;$('#tLigacao').value=t.ligacao;
+  $('#btnVarrer').hidden=!temIA();
+  $('#monIA').hidden=!temIA();
+  renderUso();
+  $('#proxyCode').textContent=PROXY_CODE;
+}
+function mostrarGate(){
+  $('#gateLogo').src=document.querySelector('.logo').src;
+  $('#gate').hidden=false;$('#gEmail').focus();
+}
+async function entrarNoSistema(){
+  $('#gate').hidden=true;
+  $('#syncDot').className='dot live';
+  $('#syncTxt').textContent=user?.email||'conectado';
+  try{await db.carregar()}catch(e){toast('Não consegui ler o banco: '+e.message)}
+  renderTudo();
+}
+$('#gEntrar').onclick=async()=>{
+  const b=$('#gEntrar'),err=$('#gErr');
+  err.textContent='';b.disabled=true;b.innerHTML='<span class="spin"></span>';
+  const {data,error}=await sb.auth.signInWithPassword({email:$('#gEmail').value.trim(),password:$('#gSenha').value});
+  b.disabled=false;b.textContent='Entrar';
+  if(error){err.textContent=/Invalid/i.test(error.message)?'E-mail ou senha não conferem.':error.message;return}
+  user=data.user;entrarNoSistema();
+};
+$('#gSenha').onkeydown=e=>{if(e.key==='Enter')$('#gEntrar').click()};
+$('#gDemo').onclick=()=>{sb=null;$('#gate').hidden=true;semear();renderTudo();toast('Modo demonstração — nada é gravado')};
+
+async function iniciar(){
+  load();preencherCfg();
+  $$('#scopeCtl button').forEach(b=>b.classList.toggle('on',+b.dataset.raio===S.raio));
+  if(cfg.sbUrl&&cfg.sbKey&&window.supabase){
+    sb=window.supabase.createClient(cfg.sbUrl,cfg.sbKey,{db:{schema:'radar'}});
+    const {data}=await sb.auth.getSession();
+    if(data?.session){user=data.session.user;await entrarNoSistema()}
+    else{mostrarGate();if(!S.candidatos.length||S.seedV!==SEED_V)semear();renderTudo()}
+  }else{
+    if(!S.candidatos.length||S.seedV!==SEED_V)semear();
+    renderTudo();
+  }
+}
+iniciar();
+window.fechar=fechar;window.toast=toast;
+</script>
+</body>
+</html>
