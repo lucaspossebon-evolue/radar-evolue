@@ -120,6 +120,8 @@ tbody tr:hover{background:#FAFBFD}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .filters input,.filters select{padding:8px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px}
 .filters input{min-width:210px;flex:1}
+.filters input[type=date]{min-width:0;flex:0 0 auto}
+.filters .fdata{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--txt-2)}
 
 /* ---------- oportunidades ---------- */
 .ops{grid-template-columns:repeat(auto-fill,minmax(322px,1fr))}
@@ -324,11 +326,12 @@ tbody tr:hover{background:#FAFBFD}
     <input id="fBusca" placeholder="Buscar por nome, cargo ou cidade">
     <select id="fAval"><option value="">Toda avaliação</option><option>Excelente</option><option>Muito Bom</option><option>Bom</option></select>
     <select id="fCidade"><option value="">Todas as cidades</option></select>
-    <select id="fOrd"><option value="score">Maior empregabilidade</option><option value="parado">Mais tempo parado</option><option value="nome">Nome</option></select>
+    <label class="fdata" title="Mostra só quem se cadastrou no Quickin a partir desta data">Cadastro desde <input type="date" id="fDesde"></label>
+    <select id="fOrd"><option value="score">Maior empregabilidade</option><option value="recentes">Cadastro mais recente</option><option value="parado">Mais tempo parado</option><option value="nome">Nome</option></select>
   </div>
   <div class="card" style="overflow:auto">
     <table>
-      <thead><tr><th>Candidato</th><th>Cidade</th><th>Área</th><th>Avaliação</th><th>Parado</th><th>Empregabilidade</th><th></th></tr></thead>
+      <thead><tr><th>Candidato</th><th>Cidade</th><th>Área</th><th>Avaliação</th><th>Cadastro</th><th>Parado</th><th>Empregabilidade</th><th></th></tr></thead>
       <tbody id="tbCand"></tbody>
     </table>
   </div>
@@ -530,13 +533,14 @@ const cidUf=t=>{const m=(t||'').match(/^(.*?)\s*-\s*([A-Z]{2})$/);return m?[m[1]
 const db={
   async carregar(){
     const [c,o]=await Promise.all([
-      sb.from('candidatos').select('*').eq('arquivado',false).order('empregabilidade',{ascending:false}),
+      (async()=>{const tudo=[];for(let i=0;;i+=1000){const r=await sb.from('candidatos').select('*').eq('arquivado',false).order('empregabilidade',{ascending:false}).order('id').range(i,i+999);if(r.error)return r;tudo.push(...(r.data||[]));if(!r.data||r.data.length<1000)break}return {data:tudo,error:null}})(),
       sb.from('oportunidades').select('*').eq('descartada',false).order('score',{ascending:false})]);
     if(c.error)throw c.error; if(o.error)throw o.error;
     S.candidatos=(c.data||[]).map(r=>({id:r.id,nome:r.nome,cargo:r.cargo||'',cidade:r.cidade+(r.uf?' - '+r.uf:''),
       area:r.area||'Administrativo',aval:r.avaliacao||'Bom',parado:r.dias_parado||0,
       escolaridade:r.escolaridade||'Não informado',pretensao:Number(r.pretensao)||0,
-      emp:r.empregabilidade||0,email:r.email||'',fone:r.telefone||'',origem:'quickin'}));
+      emp:r.empregabilidade||0,email:r.email||'',fone:r.telefone||'',origem:'quickin',
+      cadastro:(r.cadastrado_em||'').slice(0,10)}));
     S.oportunidades=(o.data||[]).map(r=>({id:r.id,empresa:r.empresa,cidade:r.cidade+(r.uf?' - '+r.uf:''),
       dist:r.dist_km||0,area:r.area||'Administrativo',cargo:r.cargo||'',sinal:r.sinal||'',
       fonte:r.fonte||'',link:r.link||'',contato:r.contato||'',
@@ -811,9 +815,9 @@ function renderParados(){
 }
 
 function candFiltrados(){
-  const q=($('#fBusca').value||'').toLowerCase(),a=$('#fAval').value,ci=$('#fCidade').value,o=$('#fOrd').value;
-  let l=S.candidatos.filter(c=>(!q||(c.nome+c.cargo+c.cidade).toLowerCase().includes(q))&&(!a||c.aval===a)&&(!ci||c.cidade===ci));
-  l.sort((x,y)=>o==='nome'?x.nome.localeCompare(y.nome):o==='parado'?y.parado-x.parado:y.emp-x.emp);
+  const q=($('#fBusca').value||'').toLowerCase(),a=$('#fAval').value,ci=$('#fCidade').value,o=$('#fOrd').value,de=$('#fDesde').value;
+  let l=S.candidatos.filter(c=>(!q||(c.nome+c.cargo+c.cidade).toLowerCase().includes(q))&&(!a||c.aval===a)&&(!ci||c.cidade===ci)&&(!de||(c.cadastro&&c.cadastro>=de)));
+  l.sort((x,y)=>o==='nome'?x.nome.localeCompare(y.nome):o==='parado'?y.parado-x.parado:o==='recentes'?(y.cadastro||'').localeCompare(x.cadastro||''):y.emp-x.emp);
   return l;
 }
 function renderCand(){
@@ -824,9 +828,10 @@ function renderCand(){
     <td class="who"><b>${esc(c.nome)}</b><small>${esc(c.cargo)}</small></td>
     <td>${esc(c.cidade)}</td><td>${esc(c.area)}</td>
     <td><span class="tag ${c.aval==='Excelente'?'ok':''}">${esc(c.aval)}</span></td>
+    <td style="font-family:var(--mono);font-size:12px;color:var(--txt-2)">${c.cadastro?c.cadastro.split('-').reverse().join('/'):'—'}</td>
     <td style="font-family:var(--mono);font-size:12px;color:${c.parado>45?'#C33C0F':'var(--txt-2)'}">${c.parado}d</td>
     <td><div style="display:flex;align-items:center;gap:8px"><div class="bar"><i style="width:${c.emp}%;background:${corTemp(c.emp)}"></i></div><span style="font-family:var(--mono);font-size:12px">${c.emp}</span></div></td>
-    <td><button class="btn sm ghost" data-c="${c.id}">Buscar vagas</button></td></tr>`).join(''):'<tr><td colspan="7" class="empty"><b>Nenhum candidato com esses filtros</b>Ajuste a busca ou sincronize com o Quickin.</td></tr>';
+    <td><button class="btn sm ghost" data-c="${c.id}">Buscar vagas</button></td></tr>`).join(''):'<tr><td colspan="8" class="empty"><b>Nenhum candidato com esses filtros</b>Ajuste a busca ou sincronize com o Quickin.</td></tr>';
   $$('#tbCand button[data-c]').forEach(b=>b.onclick=()=>abrirCand(b.dataset.c));
 }
 
@@ -1448,7 +1453,7 @@ async function sincronizarQuickin(){
     if(!r.ok||j.erro)throw new Error(j.detalhe||j.erro||('HTTP '+r.status));
     if(sb)await db.carregar();
     renderTudo();marcarSync();
-    toast(j.gravados+' candidatos sincronizados'+(j.truncado?' (truncado, rode de novo)':''));
+    toast(j.aviso?j.aviso:(j.gravados+' candidatos sincronizados'+(j.truncado?' — clique de novo para continuar (página '+j.proxima_pagina+' de '+(j.paginas_total||'?')+')':' — base completa')));
   }catch(e){toast('Falha na sincronização: '+e.message)}
   b.disabled=false;b.textContent='Sincronizar com o Quickin';
 }
@@ -1477,7 +1482,7 @@ function ir(v){$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));$$
 $$('#tabs button').forEach(b=>b.onclick=()=>ir(b.dataset.v));
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2600)}
 $$('#scopeCtl button').forEach(b=>b.onclick=()=>{$$('#scopeCtl button').forEach(x=>x.classList.remove('on'));b.classList.add('on');S.raio=+b.dataset.raio;renderRadar()});
-['#fBusca','#fAval','#fCidade','#fOrd'].forEach(s=>$(s).addEventListener('input',renderCand));
+['#fBusca','#fAval','#fCidade','#fOrd','#fDesde'].forEach(s=>{$(s).addEventListener('input',renderCand);$(s).addEventListener('change',renderCand)});
 $('#fOpOrd').onchange=renderOps;
 ['#fOpBusca','#fOpArea','#fOpTipo','#fOpMatch'].forEach(s=>$(s).addEventListener('input',renderOps));
 $('#btnSync').onclick=sincronizarQuickin;
